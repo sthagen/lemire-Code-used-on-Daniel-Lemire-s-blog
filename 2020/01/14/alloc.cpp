@@ -4,10 +4,11 @@
 #include <iomanip>
 #include <iostream>
 
-static void escape(void* p) { asm volatile("" : : "g"(p) : "memory"); }
+#ifdef __linux__
+#include <sys/mman.h>
+#endif
 
-// if needed
-// static void clobber() { asm volatile("" : : : "memory"); }
+static void escape(void* p) { asm volatile("" : : "g"(p) : "memory"); }
 
 constexpr std::size_t MB        = 1024 * 1024;
 constexpr std::size_t page_size = 4096;
@@ -51,6 +52,49 @@ void calloc(size_t size) {
   free(buf);
 }
 
+#ifdef __linux__
+void mmap_populate(size_t size) {
+  char* buf;
+  {
+    auto t = Timer{size, __FUNCTION__};
+    buf    = (char *) mmap (NULL, size, PROT_READ|PROT_WRITE,
+	      MAP_PRIVATE|MAP_POPULATE|MAP_ANONYMOUS, -1, 0);
+    escape(&buf);
+  }
+  munmap(buf, size);
+}
+#endif
+void just_malloc(size_t size) {
+  char* buf;
+  {
+    auto t = Timer{size, __FUNCTION__};
+    buf    = (char*)malloc(size);
+    escape(&buf);
+  }
+  free(buf);
+}
+
+
+void just_new(size_t size) {
+  char* buf;
+  {
+    auto t = Timer{size, __FUNCTION__};
+    buf    = new(std::nothrow) char[size];
+    escape(&buf);
+  }
+  delete[] buf;
+}
+
+void just_memalign(size_t size) {
+  char* buf;
+  {
+    auto t = Timer{size, __FUNCTION__};
+    posix_memalign((void**)&buf,64,size);
+    escape(&buf);
+  }
+  free(buf);
+}
+
 void new_and_touch(size_t size) {
   char* buf;
   {
@@ -63,6 +107,16 @@ void new_and_touch(size_t size) {
   delete[] buf;
 }
 
+void new_and_memset(size_t size) {
+  char* buf;
+  {
+    auto t = Timer{size, __FUNCTION__};
+    buf    = new char[size];
+    memset(buf,0,size);
+    escape(&buf);
+  }
+  delete[] buf;
+}
 void new_and_value_init(size_t size) {
   char* buf;
   {
@@ -112,13 +166,24 @@ void mempy_into_existing_allocation(size_t size) {
 }
 
 int main() {
-  for (size_t i = 256 * MB; i <= 1024 * MB; i *= 2) {
-    calloc(i);
-    new_and_touch(i);
-    new_and_value_init(i);
-    new_and_value_init_nothrow(i);
-    memset_existing_allocation(i);
-    mempy_into_existing_allocation(i);
+  // for (size_t i = 256 * MB; i <= 1024 * MB; i *= 2) {
+  for (size_t i = 34588; i <= 34588; i *= 2) {
+    for(size_t j = 0; j < 10; j++) {
+      calloc(i);
+      just_malloc(i);
+      just_new(i);
+      just_memalign(i);
+      new_and_touch(i);
+      new_and_memset(i);
+      new_and_value_init(i);
+      new_and_value_init_nothrow(i);
+      memset_existing_allocation(i);
+      mempy_into_existing_allocation(i);
+#ifdef __linux__
+      mmap_populate(i);
+#endif
+      printf("=======\n");
+    }
     std::cout << '\n';
   }
 }
