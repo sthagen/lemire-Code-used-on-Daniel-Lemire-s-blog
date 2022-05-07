@@ -10,6 +10,10 @@
 #ifndef __GNUC__
 #warning "We assume a GCC-like compiler."
 #endif
+#include <chrono>
+#include <thread>
+#include <numeric>
+#include <algorithm>
 #include <cassert>
 #include <cinttypes>
 #include <cstdint>
@@ -19,13 +23,21 @@
 #include <exception>
 #include <iostream>
 #include <vector>
+#include <time.h> // for clock_t, clock()
+struct timespec start;
+struct timespec end;
+// time spent in nanoseconds
+double timespent() {
+  return (end.tv_sec - start.tv_sec) * 1000000000 +
+         (end.tv_nsec - start.tv_nsec);
+}
 
 #ifdef __x86_64__
 #include <x86intrin.h> // assume GCC/clang
 #elif defined(__aarch64__)
 #include <arm_neon.h>
 #endif
-#define ITERATIONS 10
+#define ITERATIONS 100
 
 /* result might be undefined when input_num is zero */
 static inline int trailingzeroes(uint64_t input_num) {
@@ -76,11 +88,14 @@ uint64_t *build_bitmap(const char *filename, char target, size_t *wordcount) {
   *wordcount = len / 64;
   uint64_t *data = new uint64_t[*wordcount];
   memset(data, 0, *wordcount * sizeof(uint64_t));
+  size_t matches = 0;
   for (size_t i = 0; i < *wordcount * 64; i++) {
     if ((filedata[i] == target) || ((unsigned char)filedata[i] < 0x20)) {
+      matches ++;
       data[i / 64] |= (UINT64_C(1) << (i % 64));
     }
   }
+  // std::cout << " Loaded " << len/64*64 << " bits with " << matches << " bits set." << std::endl;
   delete[] filedata;
   return data;
 }
@@ -141,6 +156,7 @@ static inline void simdjson_decoder_new_arm(uint32_t *base_ptr, uint32_t &base,
 }
 #endif
 
+// This will just count the number of bits
 static inline void just(uint32_t *base_ptr, uint32_t &base, uint32_t idx,
                         uint64_t bits) {
   uint32_t cnt = hamming(bits);
@@ -321,8 +337,80 @@ static inline void faster_decoder(uint32_t *base_ptr, uint32_t &base,
   }
 }
 
+#ifdef __AVX512F__
+
+#include <x86intrin.h>
+
+static inline void avx512_decoder(uint32_t *base_ptr, uint32_t &base,
+                                           uint32_t idx, uint64_t bits) {
+  __m512i start_index = _mm512_set1_epi32(idx);
+  __m512i base_index = _mm512_setr_epi32(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
+  base_index = _mm512_add_epi32(base_index, start_index);
+  uint16_t mask;
+  mask = bits & 0xFFFF;
+  _mm512_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  const __m512i constant16 = _mm512_set1_epi32(16);
+  base_index = _mm512_add_epi32(base_index, constant16);
+  mask = (bits>>16) & 0xFFFF;
+  _mm512_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm512_add_epi32(base_index, constant16);
+  mask = (bits>>32) & 0xFFFF;
+  _mm512_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm512_add_epi32(base_index, constant16);
+  mask = bits>>48;
+  _mm512_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+}
+
+
+static inline void avx256_decoder(uint32_t *base_ptr, uint32_t &base,
+                                           uint32_t idx, uint64_t bits) {
+  __m256i start_index = _mm256_set1_epi32(idx);
+  __m256i base_index = _mm256_setr_epi32(0,1,2,3,4,5,6,7);
+  base_index = _mm256_add_epi32(base_index, start_index);
+  uint16_t mask;
+  mask = bits & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  const __m256i constant8 = _mm256_set1_epi32(8);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>8) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>16) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>24) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>32) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>40) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = (bits>>48) & 0xFF;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+  base_index = _mm256_add_epi32(base_index, constant8);
+  mask = bits>>56;
+  _mm256_mask_compressstoreu_epi32(base_ptr + base, mask, base_index);
+  base += _popcnt64(mask);
+}
+#endif
+
 template <void (*F)(uint32_t *, uint32_t &, uint32_t, uint64_t)>
 void test(const char *filename, char target) {
+  // We pause to avoid frequency throttling.
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
   size_t wordcount;
   uint64_t *array = build_bitmap(filename, target, &wordcount);
   uint32_t *bigarray = new uint32_t[wordcount * 64];
@@ -337,6 +425,7 @@ void test(const char *filename, char target) {
   LinuxEvents<PERF_TYPE_HARDWARE> unified(evts);
   std::vector<unsigned long long> results;
   std::vector<std::vector<unsigned long long>> allresults;
+  std::vector<double> timings;
   results.resize(evts.size());
 #elif defined(__APPLE__) && defined(__aarch64__)
   performance_counters agg_min{1e300};
@@ -346,6 +435,7 @@ void test(const char *filename, char target) {
   for (uint32_t i = 0; i < iterations; i++) {
     matches = 0;
 #ifdef __linux__
+    clock_gettime(CLOCK_REALTIME, &start);
     unified.start();
 #elif defined(__APPLE__) && defined(__aarch64__)
     performance_counters start = get_counters();
@@ -355,6 +445,8 @@ void test(const char *filename, char target) {
     }
 #ifdef __linux__
     unified.end(results);
+    clock_gettime(CLOCK_REALTIME, &end);
+    timings.push_back(timespent());
     allresults.push_back(results);
 #elif defined(__APPLE__) && defined(__aarch64__)
     performance_counters end = get_counters();
@@ -363,8 +455,7 @@ void test(const char *filename, char target) {
     agg_avg += diff;
 #endif
   }
-  if ((bigarray[0] == 0) && (bigarray[117] == 0) && (bigarray[116] == 1))
-    printf("bogus.\n");
+  if ((bigarray[0] == 0) && (bigarray[117] == 0) && (bigarray[116] == 1)) { printf("bogus.\n"); }
   printf(
       "matches = %u words = %zu 1-bit density %4.3f %% 1-bit per word %4.3f ",
       matches, wordcount, double(matches) / (64 * wordcount) * 100,
@@ -374,6 +465,7 @@ void test(const char *filename, char target) {
 
   std::vector<unsigned long long> mins = compute_mins(allresults);
   std::vector<double> avg = compute_averages(allresults);
+
   printf("instructions per cycle %4.2f, cycles per value set:  "
          "%4.3f, "
          "instructions per value set: %4.3f, cycles per word: %4.3f, "
@@ -391,6 +483,12 @@ void test(const char *filename, char target) {
   printf("avg: %8.1f cycles, %8.1f instructions, \t%8.1f branch mis., %8.1f "
          "cache ref., %8.1f cache mis.\n",
          avg[0], avg[1], avg[2], avg[3], avg[4]);
+  double mintime = *min_element(timings.begin(), timings.end());
+  double maxtime = *max_element(timings.begin(), timings.end());
+  printf("time [%.3f,%.3f] ns per value set\n", mintime/matches, maxtime/matches);
+  double total_time{}; for(double t : timings) { total_time += t; }
+  printf(" detected frequency: ~ %.3f -- %.3f to GHz \n", avg[0] * iterations / total_time, double(mins[0])/mintime);
+
 #elif defined(__APPLE__) && defined(__aarch64__)
   agg_avg /= iterations;
   printf(" %8.2f instructions/word (+/- %3.1f %%) ",
@@ -428,6 +526,7 @@ template <void (*F)(uint32_t *, uint32_t &, uint32_t, uint64_t)> bool unit() {
           printf("decoded[%zu]=%u; refdecoded[%zu]=%u  \n", kk, decoded[kk], kk,
                  refdecoded[kk]);
         }
+        abort();
         return false;
       }
     }
@@ -549,6 +648,15 @@ int main(int argc, char **argv) {
   unit<basic_arm_decoder>();
   printf("basic_arm_decoder:\n");
   test<basic_arm_decoder>("nfl.csv", ',');
+#endif
+#ifdef __AVX512F__
+  unit<avx512_decoder>();
+  printf("avx512_decoder:\n");
+  test<avx512_decoder>("nfl.csv", ',');
+
+  unit<avx256_decoder>();
+  printf("avx256_decoder:\n");
+  test<avx256_decoder>("nfl.csv", ',');
 #endif
 
   unit<basic_decoder>();
