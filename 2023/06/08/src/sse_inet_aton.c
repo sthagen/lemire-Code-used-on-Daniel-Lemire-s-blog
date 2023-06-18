@@ -3,7 +3,6 @@
 
 #include <x86intrin.h> // update if we need to support Windows.
 
-
 /**
 
 This assumes Linux/macOS and a processor with SSE 4.1 (virtually any x64 processor in operation today).
@@ -33,7 +32,7 @@ relatively little memory.
 
 */
 
-const static uint8_t patterns_id[256] = {
+static const uint8_t patterns_id[256] = {
     38,  65,  255, 56,  73,  255, 255, 255, 255, 255, 255, 3,   255, 255, 6,
     255, 255, 9,   255, 27,  255, 12,  30,  255, 255, 255, 255, 15,  255, 33,
     255, 255, 255, 255, 18,  36,  255, 255, 255, 54,  21,  255, 39,  255, 255,
@@ -54,7 +53,7 @@ const static uint8_t patterns_id[256] = {
     20,
 };
 
-const static uint8_t patterns[81][16] = {
+static const uint8_t patterns[81][16] = {
   {0, 128, 2, 128, 4, 128, 6, 128, 128, 128, 128, 128, 128, 128, 128, 128},
   {0, 128, 2, 128, 4, 128, 7, 6, 128, 128, 128, 128, 128, 128, 128, 6},
   {0, 128, 2, 128, 4, 128, 8, 7, 128, 128, 128, 128, 128, 128, 6, 6},
@@ -139,7 +138,6 @@ const static uint8_t patterns[81][16] = {
 };
 
 int sse_inet_aton(const char* ipv4_string, const size_t ipv4_string_length, uint32_t * destination) {
-  //const size_t n = ipv4_string_length;
   // This function always reads 16 bytes. With AVX-512 we can do a mask
   // load, but it is not generally available with SSE 4.1.
   const __m128i input = _mm_loadu_si128((const __m128i *)ipv4_string);
@@ -151,31 +149,33 @@ int sse_inet_aton(const char* ipv4_string, const size_t ipv4_string_length, uint
   {
     const __m128i dot = _mm_set1_epi8('.');
     const __m128i t0 = _mm_cmpeq_epi8(input, dot);
-    dotmask = _mm_movemask_epi8(t0);
-    uint16_t mask = 1 << ipv4_string_length;
+    dotmask = (uint16_t)_mm_movemask_epi8(t0);
+    uint16_t mask = (uint16_t)(1 << ipv4_string_length);
     dotmask &= mask - 1;
     dotmask |= mask;
   }
 
   // build a hashcode
-  const uint8_t hashcode = ((6639 * dotmask) >> 13);
 
+  const uint8_t hashcode = (uint8_t)((6639 * dotmask) >> 13);
   // grab the index of the shuffle mask
   const uint8_t id = patterns_id[hashcode];
   if (id >= 81) {
     return 0;
   }
   const uint8_t *pat = &patterns[id][0];
+
   const __m128i pattern = _mm_loadu_si128((const __m128i *)pat);
   // The value of the shuffle mask at a specific index points at the last digit,
   // we check that it matches the length of the input.
   const __m128i ascii0 = _mm_set1_epi8('0');
   const __m128i t0 = input;
+
   __m128i t1 = _mm_shuffle_epi8(t0, pattern);
   // check that leading digits of 2- 3- numbers are not zeros.
   {
     const __m128i eq0 = _mm_cmpeq_epi8(t1, ascii0);
-    if (!_mm_testz_si128(eq0, _mm_set_epi8(0xff, 0, 0xff, 0, 0xff, 0, 0xff, 0,
+    if (!_mm_testz_si128(eq0, _mm_set_epi8(-1, 0, -1, 0, -1, 0, -1, 0,
                                            0, 0, 0, 0, 0, 0, 0, 0))) {
       return 0;
     }
@@ -187,10 +187,18 @@ int sse_inet_aton(const char* ipv4_string, const size_t ipv4_string_length, uint
   const __m128i t2 = _mm_sub_epi8(t1b, ascii0);
   // check that everything was in the range '0' to '9'
   {
-    const __m128i c9 = _mm_set1_epi8('9' - '0');
+    // There are two ways to do it, the second one saves one instruction
+    // under LLVM clang 16. Under both GCC and clang, they have the same performance:
+    /*const __m128i c9 = _mm_set1_epi8('9' - '0');
     const __m128i t2m = _mm_max_epu8(t2, c9);
     const __m128i t2me = _mm_cmpeq_epi8(t2m, c9);
     if (!_mm_test_all_ones(t2me)) {
+      return 0;
+    }*/
+    const __m128i t2z = _mm_add_epi8(t2,_mm_set1_epi8(-128) );
+    const __m128i c9 = _mm_set1_epi8('9' - '0' - 128);
+    const __m128i t2me = _mm_cmpgt_epi8(t2z, c9);
+    if (!_mm_test_all_zeros(t2me, t2me)) {
       return 0;
     }
   }
@@ -198,15 +206,93 @@ int sse_inet_aton(const char* ipv4_string, const size_t ipv4_string_length, uint
   const __m128i weights =
       _mm_setr_epi8(1, 10, 1, 10, 1, 10, 1, 10, 100, 0, 100, 0, 100, 0, 100, 0);
   const __m128i t3 = _mm_maddubs_epi16(t2, weights);
+  // In t3, we have 8 16-bit values, the first four combine the two first digits, and
+  // the 4 next 16-bit valued are made of the third digits.
   const __m128i t4 = _mm_alignr_epi8(t3, t3, 8);
   const __m128i t5 = _mm_add_epi16(t4, t3);
   // Test that we don't overflow (over 255)
-  if (!_mm_testz_si128(t5, _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0, 0xff,
-                                        0, 0xff, 0, 0xff, 0))) {
+  if (!_mm_testz_si128(t5, _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1,
+                                        0, -1, 0, -1, 0))) {
     return 0;
   }
   // pack and we are done!
   const __m128i t6 = _mm_packus_epi16(t5, t5);
-  *destination = _mm_cvtsi128_si32(t6);
-  return 1;
+  *destination = (uint32_t)_mm_cvtsi128_si32(t6);
+  return ((int)ipv4_string_length - (int)pat[6]);
+}
+
+
+int sse_inet_aton_16(const char* ipv4_string, uint32_t * destination) {
+  const __m128i input = _mm_loadu_si128((const __m128i *)ipv4_string);
+  const __m128i dot = _mm_set1_epi8('.');
+  // locate dots
+  uint16_t dotmask;
+  int ipv4_string_length;
+  {
+    const __m128i ascii0_9 = _mm_setr_epi8(
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 0, 0, 0, 0, 0, 0);
+    const __m128i digits = _mm_cmpeq_epi8(input, _mm_shuffle_epi8(ascii0_9, input));
+    
+    const __m128i t0 = _mm_cmpeq_epi8(input, dot);
+    dotmask = (uint16_t)_mm_movemask_epi8(t0);
+    const uint16_t digit_mask = (uint16_t)_mm_movemask_epi8(digits);
+    uint16_t m = digit_mask | dotmask;
+    // credit @aqrit
+    m ^= (m + 1); // mask of lowest clear bit and below
+    dotmask = ~digit_mask & m;
+    ipv4_string_length = __builtin_popcount(m) - 1;
+  }
+  // build a hashcode
+  const uint8_t hashcode = (uint8_t)((6639 * dotmask) >> 13);
+  // grab the index of the shuffle mask
+  const uint8_t id = patterns_id[hashcode];
+  if (id >= 81) {
+    return 0;
+  }
+  const uint8_t *pat = &patterns[id][0];
+
+  const __m128i pattern = _mm_loadu_si128((const __m128i *)pat);
+  // The value of the shuffle mask at a specific index points at the last digit,
+  // we check that it matches the length of the input.
+  const __m128i ascii0 = _mm_set1_epi8('0');
+  const __m128i t0 = input;
+
+  __m128i t1 = _mm_shuffle_epi8(t0, pattern);
+  // check that leading digits of 2- 3- numbers are not zeros.
+  {
+    const __m128i eq0 = _mm_cmpeq_epi8(t1, ascii0);
+    if (!_mm_testz_si128(eq0, _mm_set_epi8(-1, 0, -1, 0, -1, 0, -1, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0))) {
+      return 0;
+    }
+  }
+  // replace null values with '0'
+  __m128i t1b = _mm_blendv_epi8(t1, ascii0, pattern);
+
+  // subtract '0'
+  const __m128i t2 = _mm_sub_epi8(t1b, ascii0);
+  // check that there is no dot
+  {
+    const __m128i t2me = _mm_cmpeq_epi8(t1, dot);
+    if (!_mm_test_all_zeros(t2me, t2me)) {
+      return 0;
+    }
+  }
+  // We do the computation, the Mula way.
+  const __m128i weights =
+      _mm_setr_epi8(1, 10, 1, 10, 1, 10, 1, 10, 100, 0, 100, 0, 100, 0, 100, 0);
+  const __m128i t3 = _mm_maddubs_epi16(t2, weights);
+  // In t3, we have 8 16-bit values, the first four combine the two first digits, and
+  // the 4 next 16-bit valued are made of the third digits.
+  const __m128i t4 = _mm_alignr_epi8(t3, t3, 8);
+  const __m128i t5 = _mm_add_epi16(t4, t3);
+  // Test that we don't overflow (over 255)
+  if (!_mm_testz_si128(t5, _mm_set_epi8(0, 0, 0, 0, 0, 0, 0, 0, -1, 0, -1,
+                                        0, -1, 0, -1, 0))) {
+    return 0;
+  }
+  // pack and we are done!
+  const __m128i t6 = _mm_packus_epi16(t5, t5);
+  *destination = (uint32_t)_mm_cvtsi128_si32(t6);
+  return (ipv4_string_length - (int)pat[6]);
 }
