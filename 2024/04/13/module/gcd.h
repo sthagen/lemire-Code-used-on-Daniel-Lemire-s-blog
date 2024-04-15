@@ -2,12 +2,12 @@
 #include <bit>
 
 // computes the greatest common divisor between u and v
-template <typename int_type> int_type naive_gcd(int_type u, int_type v) {
+template <std::unsigned_integral int_type> int_type naive_gcd(int_type u, int_type v) {
   return (u % v) == 0 ? v : naive_gcd(v, u % v);
 }
 
 // computes the greatest common divisor between u and v
-template <typename int_type> int_type binary_gcd(int_type u, int_type v) {
+template <std::unsigned_integral int_type> int_type binary_gcd(int_type u, int_type v) {
   if (u == 0) {
     return v;
   }
@@ -26,9 +26,9 @@ template <typename int_type> int_type binary_gcd(int_type u, int_type v) {
   return u << shift;
 }
 
-
-template <typename int_type>
-int_type binary_gcd_paolo(int_type u, int_type v) {
+// credit: Paolo Bonzini
+template <std::unsigned_integral int_type>
+int_type binary_gcd_noswap(int_type u, int_type v) {
   if (u == 0) {
     return v;
   }
@@ -47,13 +47,13 @@ int_type binary_gcd_paolo(int_type u, int_type v) {
   return u << shift;
 }
 
-template <typename int_type> struct bezout {
+template <std::unsigned_integral int_type> struct bezout {
   int_type gcd;
   int_type x;
   int_type y;
 };
 
-template <typename int_type> struct pair {
+template <std::unsigned_integral int_type> struct pair {
   int_type old_value;
   int_type new_value;
 };
@@ -61,7 +61,7 @@ template <typename int_type> struct pair {
 // computes the greatest common divisor between a and b,
 // as well as the Bézout coefficients x and y such as
 // a*x + b*y = gcd(a,b)
-template <typename int_type>
+template <std::unsigned_integral int_type>
 bezout<int_type> extended_gcd(int_type u, int_type v) {
   pair<int_type> r = {u, v};
   pair<int_type> s = {1, 0};
@@ -75,9 +75,9 @@ bezout<int_type> extended_gcd(int_type u, int_type v) {
   return {r.old_value, s.old_value, t.old_value};
 }
 
-template <typename int_type>
+// This algorithm is not correct, it does not return the correct Bézout coefficients
+template <std::unsigned_integral int_type>
 bezout<int_type> binary_extended_gcd(int_type a, int_type b) {
-
   int_type u = 1;
   int_type v = 0;
   int_type s = 0;
@@ -90,7 +90,7 @@ bezout<int_type> binary_extended_gcd(int_type a, int_type b) {
   auto beta = b;
   while ((a & 1) == 0) { // a is even
     a = a >> 1;
-    if (((u & v) & 1) == 0) {
+    if (((u | v) & 1) == 0) {
       u = u >> 1;
       v = v >> 1;
     } else {
@@ -114,8 +114,8 @@ bezout<int_type> binary_extended_gcd(int_type a, int_type b) {
       }
     } else if (b < a) {
       std::swap(a, b);
-      std::swap(u, s);
-      std::swap(t, v);
+      std::swap(u, v);
+      std::swap(s, t);
     } else {
       b = b - a;
       s = s - u;
