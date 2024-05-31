@@ -26,6 +26,9 @@ void pretty_print(size_t volume, size_t bytes, std::string name,
 }
 
 int main(int argc, char **argv) {
+  std::string justquotes(64,'\"');
+  std::string justbackslash(64,'\\');
+
   std::vector<std::string> data = {"Hello, World!",
                                    "La vie est belle",
                                    "C++ is fun",
@@ -130,18 +133,30 @@ int main(int argc, char **argv) {
     volume += s.size();
   }
   volatile uint64_t counter = 0;
+  if(!simple_needs_escaping(justquotes)|| !simple_needs_escaping(justbackslash)) {
+    printf("simple implementation is not correct\n");
+    return 1;
+  }
   pretty_print(data.size(), volume, "simple_needs_escaping",
                bench([&data, &counter]() {
                  for (const std::string &s : data) {
                    counter += simple_needs_escaping(s);
                  }
                }));
+  if(!branchless_needs_escaping(justquotes) || !branchless_needs_escaping(justbackslash)) {
+    printf("branchless implementation is not correct\n");
+    return 1;
+  }
   pretty_print(data.size(), volume, "branchless_needs_escaping",
                bench([&data, &counter]() {
                  for (const std::string &s : data) {
                    counter += branchless_needs_escaping(s);
                  }
                }));
+  if(!table_needs_escaping(justquotes) || !table_needs_escaping(justbackslash)) {
+    printf("table implementation is not correct\n");
+    return 1;
+  }
   pretty_print(data.size(), volume, "table_needs_escaping",
                bench([&data, &counter]() {
                  for (const std::string &s : data) {
@@ -149,6 +164,12 @@ int main(int argc, char **argv) {
                  }
                }));
 #if HAS_NEON || HAS_SSE2
+  if(!simd_needs_escaping(justquotes) || !simd_needs_escaping(justbackslash)) {
+    printf("SIMD implementation is not correct\n");
+    return 1;
+  } else {
+    printf("SIMD implementation is correct: %d %d\n", simd_needs_escaping(justquotes), simd_needs_escaping(justbackslash));
+  }
   pretty_print(data.size(), volume, "simd_needs_escaping",
                bench([&data, &counter]() {
                  for (const std::string &s : data) {
