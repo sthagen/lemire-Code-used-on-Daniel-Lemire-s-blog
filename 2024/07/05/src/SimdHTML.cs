@@ -1,20 +1,23 @@
 using System;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
+using System.Numerics;
 namespace SimdHTML
 {
     public static class FastScan
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void NaiveAdvanceString(ref byte* start, byte* end)
+        public unsafe static void NaiveAdvanceString(ref byte* startm, byte* end)
         {
+            byte* start = startm;
             while (start < end)
             {
                 if (*start == '<' || *start == '&' || *start == '\r' || *start == '\0')
                 {
+                    startm = start;
                     return;
                 }
                 start++;
@@ -22,9 +25,10 @@ namespace SimdHTML
 
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static void SIMDAdvanceString(ref byte* start, byte* end)
+        public unsafe static void SIMDAdvanceString(ref byte* startm, byte* end)
         {
-            if (AdvSimd.Arm64.IsSupported) // TODO: Add support for x86
+            byte* start = startm;
+            if (AdvSimd.Arm64.IsSupported)
             {
                 Vector128<byte> low_nibble_mask = Vector128.Create(0, 0, 0, 0, 0, 0, (byte)0x26, 0, 0, 0, 0, 0, (byte)0x3c, (byte)0xd, 0, 0);
                 Vector128<byte> v0f = Vector128.Create((byte)0x0F);
@@ -35,13 +39,62 @@ namespace SimdHTML
                 while (start + (stride - 1) < end)
                 {
                     Vector128<byte> data = AdvSimd.LoadVector128((byte*)start);
-                    Vector128<byte> lowpart = AdvSimd.Arm64.VectorTableLookup(low_nibble_mask, data);
+                    Vector128<byte> lowpart = AdvSimd.Arm64.VectorTableLookup(low_nibble_mask, data & v0f);
                     Vector128<byte> matchesones = AdvSimd.CompareEqual(lowpart, data);
                     if (matchesones != Vector128<byte>.Zero)
                     {
                         Vector128<byte> matches = AdvSimd.And(bit_mask, matchesones);
                         int m = AdvSimd.Arm64.MaxAcross(matches).ToScalar();
                         start += 16 - m;
+                        startm = start;
+                        return;
+                    }
+                    start += stride;
+                }
+            }
+            else if (Avx2.IsSupported)
+            {
+                // credit : Harold Aptroot
+                Vector128<byte> low_nibble_lut128 = Vector128.Create(
+                    0, 0, 0, 0, 0, 0, (byte)0x26, 0, 0, 0, 0, 0, (byte)0x3c, (byte)0xd, 0, 0);
+                Vector256<byte> low_nibble_lut = Vector256.Create(low_nibble_lut128, low_nibble_lut128);
+
+
+                const int stride = 32;
+                while (start + (stride - 1) < end)
+                {
+                    Vector256<byte> data = Avx2.LoadVector256((byte*)start);
+                    Vector256<byte> transform = Avx2.Shuffle(low_nibble_lut, data);
+                    Vector256<byte> matches_transform = Avx2.CompareEqual(transform, data);
+                    int mask = Avx2.MoveMask(matches_transform);
+                    if (mask != 0)
+                    {
+                        start += BitOperations.TrailingZeroCount(mask);
+                        startm = start;
+                        return;
+                    }
+                    start += stride;
+                }
+            }
+            else if (Ssse3.IsSupported)
+            {
+                // credit : Harold Aptroot
+                Vector128<byte> low_nibble_lut = Vector128.Create(
+                    0, 0, 0, 0, 0, 0, (byte)0x26, 0, 0, 0, 0, 0, (byte)0x3c, (byte)0xd, 0, 0);
+                const int stride = 16;
+                while (start + (stride - 1) < end)
+                {
+                    Vector128<byte> data = Sse2.LoadVector128((byte*)start);
+                    // for bytes < 0x80, lookup based on the lowest nibble
+                    // for bytes >= 0x80, zero
+                    Vector128<byte> transform = Ssse3.Shuffle(low_nibble_lut, data);
+                    // only for 0, 0x26, 0x3C, 0x0D will the transformed value match the original
+                    Vector128<byte> matches_transform = Sse2.CompareEqual(transform, data);
+                    int mask = Sse2.MoveMask(matches_transform);
+                    if (mask != 0)
+                    {
+                        start += BitOperations.TrailingZeroCount(mask);
+                        startm = start;
                         return;
                     }
                     start += stride;
@@ -53,12 +106,13 @@ namespace SimdHTML
             {
                 if (*start == '<' || *start == '&' || *start == '\r' || *start == '\0')
                 {
+                    startm = start;
                     return;
                 }
                 start++;
             }
+            startm = start;
         }
     }
-
 }
 
