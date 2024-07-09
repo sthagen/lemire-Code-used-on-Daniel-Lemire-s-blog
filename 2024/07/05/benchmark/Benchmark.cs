@@ -214,11 +214,35 @@ namespace SimdHTMLBenchmarks
                         }
                     }
                 }
-                // RunHTMLScanBenchmark(allLinesUtf8, (ref byte* s, byte* e) => SimdHTML.FastScan.NaiveAdvanceString(ref s, e));
+            }
+        }
+        private static readonly SearchValues<byte> searchValues = SearchValues.Create(stackalloc byte[] { 0, 13, 38, 60 });
+
+        [Benchmark]
+        [BenchmarkCategory("default")]
+
+        public unsafe void SearchValuesBench()
+        {
+            if (allLinesUtf8 != null)
+            {
+                unsafe
+                {
+                    ReadOnlySpan<byte> data = allLinesUtf8;
+                    while (!data.IsEmpty)
+                    {
+                        int first = data.IndexOfAny(searchValues);
+                        data = data.Slice(first >= 0 ? first + 1 : 1);
+                    }
+
+                }
             }
         }
 
+
     }
+
+
+
     public class Program
     {
         static void Main(string[] args)
