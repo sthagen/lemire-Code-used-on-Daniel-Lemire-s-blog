@@ -11,6 +11,56 @@
 #include <regex>
 #include "gperf.c"
 
+enum class SchemeType {
+  HTTP = 0,
+  NOT_SPECIAL = 1,
+  HTTPS = 2,
+  WS = 3,
+  FTP = 4,
+  WSS = 5,
+  FILE = 6,
+};
+
+namespace details {
+static inline uint64_t branchless_load5(const char* data, size_t size) {
+  uint64_t val = 0;
+  if (size >= 1) val |= (uint64_t)(uint8_t)data[0] << 0;
+  if (size >= 2) val |= (uint64_t)(uint8_t)data[1] << 8;
+  if (size >= 3) val |= (uint64_t)(uint8_t)data[2] << 16;
+  if (size >= 4) val |= (uint64_t)(uint8_t)data[3] << 24;
+  if (size >= 5) val |= (uint64_t)(uint8_t)data[4] << 32;
+  return val;
+}
+}
+
+SchemeType get_scheme_type(std::string_view scheme) noexcept {
+  constexpr auto make_key = [](std::string_view sv) {
+    uint64_t val = 0;
+    for (size_t i = 0; i < sv.size(); i++)
+      val |= (uint64_t)(uint8_t)sv[i] << (i * 8);
+    return val;
+  };
+  constexpr static uint64_t scheme_keys[] = {
+      make_key("http"),  // 0: HTTP
+      0,                 // 1: sentinel
+      make_key("https"), // 2: HTTPS
+      make_key("ws"),    // 3: WS
+      make_key("ftp"),   // 4: FTP
+      make_key("wss"),   // 5: WSS
+      make_key("file"),  // 6: FILE
+      0,                 // 7: sentinel
+  };
+  if (scheme.empty() || scheme.size() > 5) {
+    return SchemeType::NOT_SPECIAL;
+  }
+  int hash_value = (2 * scheme.size() + (unsigned)(scheme[0])) & 7;
+  uint64_t input = details::branchless_load5(scheme.data(), scheme.size());
+  if (input == scheme_keys[hash_value]) {
+    return static_cast<SchemeType>(hash_value);
+  }
+  return SchemeType::NOT_SPECIAL;
+}
+
 uint64_t nano() {
   return std::chrono::duration_cast<::std::chrono::nanoseconds>(
              std::chrono::steady_clock::now().time_since_epoch())
@@ -597,6 +647,15 @@ bool hash_is_special(std::string_view input) {
 __attribute__((noinline))
 bool no_inline_hash_is_special(std::string_view input) {
   return special_set.find(input) != special_set.end();
+}
+
+bool schemetype_is_special(std::string_view input) {
+  return get_scheme_type(input) != SchemeType::NOT_SPECIAL;
+}
+
+__attribute__((noinline))
+bool no_inline_schemetype_is_special(std::string_view input) {
+  return get_scheme_type(input) != SchemeType::NOT_SPECIAL;
 }
 
 std::vector<std::string_view> populate(size_t length) {
@@ -1295,6 +1354,44 @@ void simulation(size_t N) {
     double t = double(finish - start) / (N * count);
 
     printf("no_inline_mask3_is_special %f ns/string, matches = %zu \n", t, matches);
+  }
+
+  {
+    uint64_t start = nano();
+    uint64_t finish = start;
+    size_t count{0};
+    size_t matches{0};
+    uint64_t threshold = 500000000;
+    for (; finish - start < threshold;) {
+      count++;
+      matches = 0;
+      for (auto v : data) {
+        matches += schemetype_is_special(v);
+      }
+      finish = nano();
+    }
+    double t = double(finish - start) / (N * count);
+
+    printf("schemetype_is_special %f ns/string, matches = %zu \n", t, matches);
+  }
+
+  {
+    uint64_t start = nano();
+    uint64_t finish = start;
+    size_t count{0};
+    size_t matches{0};
+    uint64_t threshold = 500000000;
+    for (; finish - start < threshold;) {
+      count++;
+      matches = 0;
+      for (auto v : data) {
+        matches += no_inline_schemetype_is_special(v);
+      }
+      finish = nano();
+    }
+    double t = double(finish - start) / (N * count);
+
+    printf("no_inline_schemetype_is_special %f ns/string, matches = %zu \n", t, matches);
   }
 }
 int main() { simulation(8192); simulation(65536); }
