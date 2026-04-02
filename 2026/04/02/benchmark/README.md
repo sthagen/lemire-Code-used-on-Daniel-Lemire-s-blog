@@ -143,12 +143,47 @@ The rest of the loop body (cmeq x 4, sub x 4, loop control) is identical to `cou
 
 **Everything else** (16-byte remainder, accumulator merge, horizontal sum, scalar tail) is identical to `count_assembly_claude_2`.
 
+### 6. `count_assembly_claude_3` (NEON, 64 bytes/iteration, 4 accumulators, `ld1` multi-register + `subs`)
+
+**Setup:** Identical to `count_assembly_claude_2`.
+
+**Main loop (64 bytes per iteration, 11 instructions):**
+| Instruction | What it does |
+|------------|--------------|
+| `ld1 {v17.16b, v18.16b, v19.16b, v20.16b}, [x0], #64` | **Multi-register Load.** Loads 64 bytes (4 x 128-bit registers) in a single instruction and auto-increments x0 by 64. Replaces the 2 `ldp` + 1 `add` (3 instructions) from claude_2. |
+| `cmeq v17.16b, v17.16b, v1.16b` | Compare chunk 0 against `'!'`. |
+| `cmeq v18.16b, v18.16b, v1.16b` | Compare chunk 1. |
+| `cmeq v19.16b, v19.16b, v1.16b` | Compare chunk 2. |
+| `cmeq v20.16b, v20.16b, v1.16b` | Compare chunk 3. |
+| `sub v2.16b, v2.16b, v17.16b` | Accumulate chunk 0 matches into accumulator 0. |
+| `sub v4.16b, v4.16b, v18.16b` | Accumulate chunk 1 matches into accumulator 1. |
+| `sub v7.16b, v7.16b, v19.16b` | Accumulate chunk 2 matches into accumulator 2. |
+| `sub v16.16b, v16.16b, v20.16b` | Accumulate chunk 3 matches into accumulator 3. |
+| `subs x1, x1, #64` | **Subtract and Set flags.** Decreases remaining count by 64 AND sets the condition flags in one instruction. Replaces the separate `sub` + `cmp` (2 instructions) from claude_2. |
+| `b.ge 10b` | Loop while remaining >= 0 (meaning there were 64+ bytes before the subtract). |
+
+**Loop entry uses pre-subtraction:**
+| Instruction | What it does |
+|------------|--------------|
+| `subs x1, x1, #64` | Pre-subtract 64 from the length before entering the loop. If the result is negative, skip the main loop entirely. |
+| `b.lt 20f` | Branch to remainder handling if fewer than 64 bytes. |
+
+After the main loop, `adds x1, x1, #64` restores the true remainder (0-63 bytes).
+
+**Key improvements over claude_2 and grok2:**
+- The `ld1` multi-register instruction replaces 3 instructions (`ldp` + `ldp` + `add`) with 1, reducing the loop body from 14 to 11 instructions per 64 bytes.
+- Unlike grok2's post-index `ldp` pair, there is no serialization between loads -- the single `ld1` instruction handles all 64 bytes and the pointer update atomically.
+- `subs` combines the subtract and compare into one instruction, eliminating another instruction per iteration.
+
+**16-byte remainder + merge + scalar tail:** Same as claude_2, also using `subs` for tighter loop control.
+
 ### Summary of differences
 
-| Version | Bytes/iter | Accumulators | Load strategy | Key limitation |
-|---------|-----------|-------------|---------------|----------------|
-| claude | 16 | 1 (v2) | `ld1` x 1 | Accumulator dependency chain; high loop overhead |
-| grok | 32 | 1 (v2) | `ld1` x 2 | Accumulator dependency chain (serial `sub`s) |
-| claude_2 | 64 | 4 (v2,v4,v7,v16) | `ldp` + offset, both loads independent | -- |
-| grok2 | 64 | 4 (v2,v4,v7,v16) | `ldp` + post-index writeback, loads are serialized | Second `ldp` depends on first's writeback |
+| Version | Bytes/iter | Accumulators | Load strategy | Loop body insns | Key limitation |
+|---------|-----------|-------------|---------------|-----------------|----------------|
+| claude | 16 | 1 (v2) | `ld1` x 1 | 6 | Accumulator dependency chain; high loop overhead |
+| grok | 32 | 1 (v2) | `ld1` x 2 | 9 | Accumulator dependency chain (serial `sub`s) |
+| claude_2 | 64 | 4 (v2,v4,v7,v16) | `ldp` + offset, both loads independent | 14 | Extra `add` for pointer advance |
+| grok2 | 64 | 4 (v2,v4,v7,v16) | `ldp` + post-index writeback | 13 | Second `ldp` depends on first's writeback |
+| claude_3 | 64 | 4 (v2,v4,v7,v16) | `ld1` multi-register (single insn for 64B) + `subs` | 11 | -- |
 
