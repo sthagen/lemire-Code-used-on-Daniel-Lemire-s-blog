@@ -40,12 +40,12 @@ The output shows timing results for each implementation, measured in nanoseconds
 
 Latest performance results (on ARM64 hardware):
 
-- count_classic: 58.786 ns
-- count_assembly_claude: 12.300 ns
-- count_assembly_grok: 7.671 ns
-- count_assembly_claude_2: 6.540 ns
-- count_assembly_grok2: 6.522 ns
-- count_assembly_claude_3: TBD (to be determined)
+- count_classic: 58.405 ns
+- count_assembly_claude: 12.656 ns
+- count_assembly_grok: 7.888 ns
+- count_assembly_claude_2: 6.637 ns
+- count_assembly_grok2: 6.574 ns
+- count_assembly_claude_3: 6.434 ns
 
 The SIMD versions achieve significant speedups through parallel processing of multiple bytes.
 
