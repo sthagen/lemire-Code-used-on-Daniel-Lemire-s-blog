@@ -303,86 +303,64 @@ void collect_benchmark_results(size_t input_size, size_t number_strings) {
       size_t len = str.size();
       __asm__ volatile (
         "dup v1.16b, %w[ch]\n"
-        // 8 independent byte-lane accumulators
         "movi v2.16b, #0\n"
         "movi v4.16b, #0\n"
         "movi v7.16b, #0\n"
         "movi v16.16b, #0\n"
-        "movi v25.16b, #0\n"
-        "movi v26.16b, #0\n"
-        "movi v27.16b, #0\n"
-        "movi v28.16b, #0\n"
         "mov x0, %[data]\n"
         "mov x1, %[len]\n"
-        // 128-byte loop
-        "cmp x1, #128\n"
+        // 64-byte loop using single ld1 for 4 regs
+        "subs x1, x1, #64\n"
         "b.lt 20f\n"
         "10:\n"
-        // 4 independent ldp loads (no writeback, all read same x0)
-        "ldp q17, q18, [x0]\n"
-        "ldp q19, q20, [x0, #32]\n"
-        "ldp q21, q22, [x0, #64]\n"
-        "ldp q23, q24, [x0, #96]\n"
-        "add x0, x0, #128\n"
-        // 8 compares
+        "ld1 {v17.16b, v18.16b, v19.16b, v20.16b}, [x0], #64\n"
         "cmeq v17.16b, v17.16b, v1.16b\n"
         "cmeq v18.16b, v18.16b, v1.16b\n"
         "cmeq v19.16b, v19.16b, v1.16b\n"
         "cmeq v20.16b, v20.16b, v1.16b\n"
-        "cmeq v21.16b, v21.16b, v1.16b\n"
-        "cmeq v22.16b, v22.16b, v1.16b\n"
-        "cmeq v23.16b, v23.16b, v1.16b\n"
-        "cmeq v24.16b, v24.16b, v1.16b\n"
-        // 8 independent accumulates (each to its own accumulator)
         "sub v2.16b, v2.16b, v17.16b\n"
         "sub v4.16b, v4.16b, v18.16b\n"
         "sub v7.16b, v7.16b, v19.16b\n"
         "sub v16.16b, v16.16b, v20.16b\n"
-        "sub v25.16b, v25.16b, v21.16b\n"
-        "sub v26.16b, v26.16b, v22.16b\n"
-        "sub v27.16b, v27.16b, v23.16b\n"
-        "sub v28.16b, v28.16b, v24.16b\n"
-        "sub x1, x1, #128\n"
-        "cmp x1, #128\n"
+        "subs x1, x1, #64\n"
         "b.ge 10b\n"
-        // 16-byte loop for remainder
+        // Restore remainder
         "20:\n"
-        "cmp x1, #16\n"
-        "b.lt 30f\n"
+        "adds x1, x1, #64\n"
+        "b.eq 30f\n"
+        // 16-byte remainder
+        "subs x1, x1, #16\n"
+        "b.lt 25f\n"
         "21:\n"
         "ld1 {v0.16b}, [x0], #16\n"
         "cmeq v0.16b, v0.16b, v1.16b\n"
         "sub v2.16b, v2.16b, v0.16b\n"
-        "sub x1, x1, #16\n"
-        "cmp x1, #16\n"
+        "subs x1, x1, #16\n"
         "b.ge 21b\n"
-        // Tree-merge 8 accumulators into v2
+        "25:\n"
+        "adds x1, x1, #16\n"
+        // Merge 4 accumulators
         "30:\n"
-        "add v2.16b, v2.16b, v25.16b\n"
-        "add v4.16b, v4.16b, v26.16b\n"
-        "add v7.16b, v7.16b, v27.16b\n"
-        "add v16.16b, v16.16b, v28.16b\n"
         "add v2.16b, v2.16b, v4.16b\n"
         "add v7.16b, v7.16b, v16.16b\n"
         "add v2.16b, v2.16b, v7.16b\n"
         "uaddlv h3, v2.16b\n"
         "umov w2, v3.h[0]\n"
-        // Scalar tail
+        // Scalar tail (x1 has 0-15 remaining)
+        "b.eq 40f\n"
         "31:\n"
-        "cbz x1, 40f\n"
         "ldrb w3, [x0], #1\n"
         "cmp w3, %w[ch]\n"
         "cinc w2, w2, eq\n"
-        "sub x1, x1, #1\n"
-        "b 31b\n"
+        "subs x1, x1, #1\n"
+        "b.gt 31b\n"
         "40:\n"
         "mov %w[out], w2\n"
         : [out] "=r"(local_c)
         : [data] "r"(data), [len] "r"(len), [ch] "r"((int)'!')
         : "x0", "x1", "x2", "x3",
-          "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7",
-          "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23", "v24",
-          "v25", "v26", "v27", "v28"
+          "v0", "v1", "v2", "v3", "v4", "v7",
+          "v16", "v17", "v18", "v19", "v20"
       );
       c += local_c;
     }
