@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <arm_neon.h>
+
 #include "counters/bench.h"
 
 double pretty_print(const std::string &name, size_t num_values,
@@ -51,6 +53,16 @@ void collect_benchmark_results(size_t input_size, size_t number_strings) {
       c += std::count(str.begin(), str.end(), '!');
     }
     counter_classic += c;
+  };
+
+  volatile uint64_t counter_ranges = 0;
+
+  auto count_ranges = [&strings, &counter_ranges]() {
+    size_t c = 0;
+    for (const auto &str : strings) {
+      c += std::ranges::count(str, '!');
+    }
+    counter_ranges += c;
   };
 
   volatile uint64_t counter_assembly_claude = 0;
@@ -225,7 +237,7 @@ void collect_benchmark_results(size_t input_size, size_t number_strings) {
     counter_claude2 += c;
   };
   volatile uint64_t counter_assembly_grok2 = 0;
-  auto count_assembly_grok2 = [&strings, &counter_assembly_grok2]() {
+  auto count_assembly_grok_2 = [&strings, &counter_assembly_grok2]() {
     size_t c = 0;
     for (const auto &str : strings) {
       size_t local_c = 0;
@@ -367,28 +379,135 @@ void collect_benchmark_results(size_t input_size, size_t number_strings) {
     counter_claude3 += c;
   };
 
+  volatile uint64_t counter_neon_intrinsics = 0;
+  auto count_neon_intrinsics_claude_3_grok = [&strings, &counter_neon_intrinsics]() {
+    size_t c = 0;
+    for (const auto &str : strings) {
+      size_t local_c = 0;
+      const char* data = str.data();
+      size_t len = str.size();
+      uint8x16_t splat = vdupq_n_u8('!');
+      uint8x16_t acc0 = vdupq_n_u8(0);
+      uint8x16_t acc1 = vdupq_n_u8(0);
+      uint8x16_t acc2 = vdupq_n_u8(0);
+      uint8x16_t acc3 = vdupq_n_u8(0);
+      const uint8_t* ptr = reinterpret_cast<const uint8_t*>(data);
+      while (len >= 64) {
+        uint8x16_t v0 = vld1q_u8(ptr); ptr += 16;
+        uint8x16_t v1 = vld1q_u8(ptr); ptr += 16;
+        uint8x16_t v2 = vld1q_u8(ptr); ptr += 16;
+        uint8x16_t v3 = vld1q_u8(ptr); ptr += 16;
+        uint8x16_t cmp0 = vceqq_u8(v0, splat);
+        uint8x16_t cmp1 = vceqq_u8(v1, splat);
+        uint8x16_t cmp2 = vceqq_u8(v2, splat);
+        uint8x16_t cmp3 = vceqq_u8(v3, splat);
+        acc0 = vsubq_u8(acc0, cmp0);
+        acc1 = vsubq_u8(acc1, cmp1);
+        acc2 = vsubq_u8(acc2, cmp2);
+        acc3 = vsubq_u8(acc3, cmp3);
+        len -= 64;
+      }
+      while (len >= 16) {
+        uint8x16_t v = vld1q_u8(ptr); ptr += 16;
+        uint8x16_t cmp = vceqq_u8(v, splat);
+        acc0 = vsubq_u8(acc0, cmp);
+        len -= 16;
+      }
+      // Merge accumulators
+      acc0 = vaddq_u8(acc0, acc1);
+      acc2 = vaddq_u8(acc2, acc3);
+      acc0 = vaddq_u8(acc0, acc2);
+      // Horizontal sum
+      uint16x8_t sum16 = vpaddlq_u8(acc0);
+      uint32x4_t sum32 = vpaddlq_u16(sum16);
+      uint64x2_t sum64 = vpaddlq_u32(sum32);
+      uint64_t total = vgetq_lane_u64(sum64, 0) + vgetq_lane_u64(sum64, 1);
+      // Scalar tail
+      for (size_t i = 0; i < len; ++i) {
+        if (ptr[i] == '!') ++total;
+      }
+      local_c = total;
+      c += local_c;
+    }
+    counter_neon_intrinsics += c;
+  };
+
+  volatile uint64_t counter_neon_intrinsics_claude = 0;
+  auto count_neon_intrinsics_claude_3_claude = [&strings, &counter_neon_intrinsics_claude]() {
+    size_t c = 0;
+    for (const auto &str : strings) {
+      const uint8_t* ptr = reinterpret_cast<const uint8_t*>(str.data());
+      size_t len = str.size();
+      uint8x16_t splat = vdupq_n_u8('!');
+      uint8x16_t acc0 = vdupq_n_u8(0);
+      uint8x16_t acc1 = vdupq_n_u8(0);
+      uint8x16_t acc2 = vdupq_n_u8(0);
+      uint8x16_t acc3 = vdupq_n_u8(0);
+      // 64-byte loop: single 4-register ld1, mirroring the asm
+      while (len >= 64) {
+        uint8x16x4_t q = vld1q_u8_x4(ptr);
+        ptr += 64;
+        acc0 = vsubq_u8(acc0, vceqq_u8(q.val[0], splat));
+        acc1 = vsubq_u8(acc1, vceqq_u8(q.val[1], splat));
+        acc2 = vsubq_u8(acc2, vceqq_u8(q.val[2], splat));
+        acc3 = vsubq_u8(acc3, vceqq_u8(q.val[3], splat));
+        len -= 64;
+      }
+      // 16-byte remainder
+      while (len >= 16) {
+        uint8x16_t v = vld1q_u8(ptr);
+        ptr += 16;
+        acc0 = vsubq_u8(acc0, vceqq_u8(v, splat));
+        len -= 16;
+      }
+      // Merge 4 accumulators, then a single uaddlv horizontal sum
+      acc0 = vaddq_u8(acc0, acc1);
+      acc2 = vaddq_u8(acc2, acc3);
+      acc0 = vaddq_u8(acc0, acc2);
+      uint32_t total = vaddlvq_u8(acc0);
+      // Scalar tail (0-15 bytes)
+      for (size_t i = 0; i < len; ++i) {
+        total += (ptr[i] == '!');
+      }
+      c += total;
+    }
+    counter_neon_intrinsics_claude += c;
+  };
+
   pretty_print("count_classic", number_strings, counters::bench(count_classic));
+  pretty_print("count_ranges", number_strings, counters::bench(count_ranges));
   pretty_print("count_assembly_claude", number_strings, counters::bench(count_assembly_claude));
   pretty_print("count_assembly_grok", number_strings, counters::bench(count_assembly_grok));
   pretty_print("count_assembly_claude_2", number_strings, counters::bench(count_assembly_claude_2));
-  pretty_print("count_assembly_grok2", number_strings, counters::bench(count_assembly_grok2));
+  pretty_print("count_assembly_grok_2", number_strings, counters::bench(count_assembly_grok_2));
   pretty_print("count_assembly_claude_3", number_strings, counters::bench(count_assembly_claude_3));
+  pretty_print("count_neon_intrinsics_claude_3_grok", number_strings, counters::bench(count_neon_intrinsics_claude_3_grok));
+  pretty_print("count_neon_intrinsics_claude_3_claude", number_strings, counters::bench(count_neon_intrinsics_claude_3_claude));
 
   // Validate correctness with a single run of each
   counter_classic = 0;
+  counter_ranges = 0;
   counter_assembly_claude = 0;
   counter_assembly_grok = 0;
   counter_claude2 = 0;
   counter_assembly_grok2 = 0;
   counter_claude3 = 0;
+  counter_neon_intrinsics = 0;
+  counter_neon_intrinsics_claude = 0;
   count_classic();
+  count_ranges();
   count_assembly_claude();
   count_assembly_grok();
   count_assembly_claude_2();
-  count_assembly_grok2();
+  count_assembly_grok_2();
   count_assembly_claude_3();
+  count_neon_intrinsics_claude_3_grok();
+  count_neon_intrinsics_claude_3_claude();
   if (counter_classic != counter_assembly_claude) {
     std::cout << "Error: counts differ (classic vs claude): " << counter_classic << " vs " << counter_assembly_claude << std::endl;
+  }
+  if (counter_classic != counter_ranges) {
+    std::cout << "Error: counts differ (classic vs ranges): " << counter_classic << " vs " << counter_ranges << std::endl;
   }
   if (counter_classic != counter_assembly_grok) {
     std::cout << "Error: counts differ (classic vs grok): " << counter_classic << " vs " << counter_assembly_grok << std::endl;
@@ -401,6 +520,12 @@ void collect_benchmark_results(size_t input_size, size_t number_strings) {
   }
   if (counter_classic != counter_claude3) {
     std::cout << "Error: counts differ (classic vs claude3): " << counter_classic << " vs " << counter_claude3 << std::endl;
+  }
+  if (counter_classic != counter_neon_intrinsics) {
+    std::cout << "Error: counts differ (classic vs neon_intrinsics): " << counter_classic << " vs " << counter_neon_intrinsics << std::endl;
+  }
+  if (counter_classic != counter_neon_intrinsics_claude) {
+    std::cout << "Error: counts differ (classic vs neon_intrinsics_claude): " << counter_classic << " vs " << counter_neon_intrinsics_claude << std::endl;
   }
 }
 

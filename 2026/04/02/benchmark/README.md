@@ -127,7 +127,7 @@ Calls the standard library `std::count`. The compiler is free to auto-vectorize 
 
 **Scalar tail:** Identical to the others.
 
-### 5. `count_assembly_grok2` (NEON, 64 bytes/iteration, 4 accumulators, `ldp` with writeback)
+### 5. `count_assembly_grok_2` (NEON, 64 bytes/iteration, 4 accumulators, `ldp` with writeback)
 
 **Setup:** Identical to `count_assembly_claude_2`.
 
