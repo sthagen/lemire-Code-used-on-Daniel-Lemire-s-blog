@@ -11,7 +11,7 @@ The benchmark compares several implementations of a character counting function:
 - **count_assembly_claude**: Claude's SIMD-optimized version using NEON instructions (16-byte chunks).
 - **count_assembly_grok**: Grok's optimized version (32-byte chunks).
 - **count_assembly_claude_2**: Claude's further optimized version (64-byte chunks with multiple accumulators).
-- **count_assembly_grok2**: Grok's latest version (64-byte chunks with improved accumulator handling).
+- **count_assembly_grok_2**: Grok's latest version (64-byte chunks with improved accumulator handling).
 - **count_assembly_claude_3**: Claude's most advanced version with additional optimizations.
 
 Each function processes 100,000 strings of varying lengths (up to 1024 characters), filled with random printable characters including occasional '!' symbols.
@@ -44,7 +44,7 @@ Latest performance results (on ARM64 hardware):
 - count_assembly_claude: 12.656 ns
 - count_assembly_grok: 7.888 ns
 - count_assembly_claude_2: 6.637 ns
-- count_assembly_grok2: 6.574 ns
+- count_assembly_grok_2: 6.574 ns
 - count_assembly_claude_3: 6.434 ns
 
 The SIMD versions achieve significant speedups through parallel processing of multiple bytes.
