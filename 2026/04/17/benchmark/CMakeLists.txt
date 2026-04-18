@@ -9,7 +9,7 @@ include(cmake/CPM.cmake)
 include_directories(benchmarks src include)
 
 add_executable(benchmark benchmarks/benchmark.cpp)
-CPMAddPackage("gh:lemire/counters#v3.1.0")
+CPMAddPackage("gh:lemire/counters#v3.2.0")
 target_link_libraries(benchmark PRIVATE counters)
 target_include_directories(benchmark PRIVATE include)
 target_compile_options(benchmark PRIVATE -march=armv8-a+sve2 -msve-vector-bits=128)
