@@ -144,7 +144,139 @@ cmake --build build
 # Instructions (clang 20)
 
 
+$ bash dump_asm.sh
+Compiling neon::classify ...
+Compiling sve::classify ...
 
+════════════════════════════════════════════════════════════════
+  neon::classify  (neon_classify_asm)
+════════════════════════════════════════════════════════════════
+0000000000000000 <neon_classify_asm>:
+   0:	movi	v0.16b, #0xf
+   4:	ldp	q1, q2, [x0]
+   8:	ldp	q3, q4, [x0, #32]
+   c:	adrp	x8, 0 <neon_classify_asm>
+  10:	ldr	q5, [x8]
+  14:	adrp	x8, 0 <neon_classify_asm>
+  18:	ushr	v6.16b, v1.16b, #4
+  1c:	ushr	v7.16b, v2.16b, #4
+  20:	ushr	v16.16b, v3.16b, #4
+  24:	and	v1.16b, v1.16b, v0.16b
+  28:	and	v2.16b, v2.16b, v0.16b
+  2c:	ushr	v17.16b, v4.16b, #4
+  30:	and	v3.16b, v3.16b, v0.16b
+  34:	and	v0.16b, v4.16b, v0.16b
+  38:	ldr	q4, [x8]
+  3c:	tbl	v6.16b, {v5.16b}, v6.16b
+  40:	tbl	v7.16b, {v5.16b}, v7.16b
+  44:	tbl	v16.16b, {v5.16b}, v16.16b
+  48:	adrp	x8, 0 <neon_classify_asm>
+  4c:	tbl	v5.16b, {v5.16b}, v17.16b
+  50:	tbl	v1.16b, {v4.16b}, v1.16b
+  54:	tbl	v2.16b, {v4.16b}, v2.16b
+  58:	tbl	v3.16b, {v4.16b}, v3.16b
+  5c:	tbl	v0.16b, {v4.16b}, v0.16b
+  60:	movi	v4.16b, #0x7
+  64:	movi	v17.16b, #0x18
+  68:	and	v1.16b, v6.16b, v1.16b
+  6c:	and	v2.16b, v7.16b, v2.16b
+  70:	and	v3.16b, v16.16b, v3.16b
+  74:	and	v0.16b, v5.16b, v0.16b
+  78:	and	v5.16b, v1.16b, v4.16b
+  7c:	and	v1.16b, v1.16b, v17.16b
+  80:	and	v6.16b, v2.16b, v17.16b
+  84:	and	v7.16b, v3.16b, v17.16b
+  88:	and	v16.16b, v0.16b, v17.16b
+  8c:	and	v2.16b, v2.16b, v4.16b
+  90:	and	v3.16b, v3.16b, v4.16b
+  94:	and	v0.16b, v0.16b, v4.16b
+  98:	ldr	q4, [x8]
+  9c:	cmeq	v5.16b, v5.16b, #0
+  a0:	cmeq	v1.16b, v1.16b, #0
+  a4:	cmeq	v6.16b, v6.16b, #0
+  a8:	cmeq	v7.16b, v7.16b, #0
+  ac:	cmeq	v16.16b, v16.16b, #0
+  b0:	cmeq	v2.16b, v2.16b, #0
+  b4:	cmeq	v3.16b, v3.16b, #0
+  b8:	cmeq	v0.16b, v0.16b, #0
+  bc:	bic	v5.16b, v4.16b, v5.16b
+  c0:	bic	v1.16b, v4.16b, v1.16b
+  c4:	bic	v6.16b, v4.16b, v6.16b
+  c8:	bic	v7.16b, v4.16b, v7.16b
+  cc:	bic	v16.16b, v4.16b, v16.16b
+  d0:	bic	v2.16b, v4.16b, v2.16b
+  d4:	bic	v3.16b, v4.16b, v3.16b
+  d8:	bic	v0.16b, v4.16b, v0.16b
+  dc:	addp	v1.16b, v1.16b, v6.16b
+  e0:	addp	v4.16b, v7.16b, v16.16b
+  e4:	addp	v2.16b, v5.16b, v2.16b
+  e8:	addp	v0.16b, v3.16b, v0.16b
+  ec:	addp	v1.16b, v1.16b, v4.16b
+  f0:	addp	v0.16b, v2.16b, v0.16b
+  f4:	addp	v1.16b, v1.16b, v1.16b
+  f8:	addp	v0.16b, v0.16b, v0.16b
+  fc:	str	d1, [x1]
+ 100:	str	d0, [x2]
+ 104:	ret
+  → 66 instructions
+
+════════════════════════════════════════════════════════════════
+  sve::classify   (sve_classify_asm)
+════════════════════════════════════════════════════════════════
+0000000000000000 <sve_classify_asm>:
+   0:	ptrue	p1.b
+   4:	adrp	x8, 0 <sve_classify_asm>
+   8:	add	x8, x8, #0x0
+   c:	ptrue	p0.b, vl16
+  10:	adrp	x9, 0 <sve_classify_asm>
+  14:	add	x9, x9, #0x0
+  18:	ld1b	{z0.b}, p1/z, [x8]
+  1c:	mov	w8, #0x10                  	// #16
+  20:	mov	w10, #0x30                  	// #48
+  24:	ld1b	{z2.b}, p0/z, [x0, x8]
+  28:	mov	w8, #0x20                  	// #32
+  2c:	ld1b	{z1.b}, p0/z, [x0]
+  30:	ld1b	{z3.b}, p1/z, [x9]
+  34:	ld1b	{z4.b}, p0/z, [x0, x8]
+  38:	ld1b	{z5.b}, p0/z, [x0, x10]
+  3c:	adrp	x8, 0 <sve_classify_asm>
+  40:	match	p1.b, p0/z, z1.b, z0.b
+  44:	match	p2.b, p0/z, z2.b, z0.b
+  48:	match	p3.b, p0/z, z4.b, z0.b
+  4c:	match	p4.b, p0/z, z5.b, z0.b
+  50:	ldr	q0, [x8]
+  54:	match	p5.b, p0/z, z1.b, z3.b
+  58:	match	p6.b, p0/z, z2.b, z3.b
+  5c:	match	p7.b, p0/z, z4.b, z3.b
+  60:	match	p0.b, p0/z, z5.b, z3.b
+  64:	mov	z1.b, p1/z, #-1
+  68:	mov	z2.b, p2/z, #-1
+  6c:	mov	z3.b, p3/z, #-1
+  70:	mov	z4.b, p4/z, #-1
+  74:	and	v1.16b, v1.16b, v0.16b
+  78:	mov	z5.b, p5/z, #-1
+  7c:	and	v2.16b, v2.16b, v0.16b
+  80:	mov	z6.b, p6/z, #-1
+  84:	and	v3.16b, v3.16b, v0.16b
+  88:	mov	z7.b, p7/z, #-1
+  8c:	and	v4.16b, v4.16b, v0.16b
+  90:	mov	z16.b, p0/z, #-1
+  94:	and	v5.16b, v5.16b, v0.16b
+  98:	addp	v1.16b, v1.16b, v2.16b
+  9c:	and	v6.16b, v6.16b, v0.16b
+  a0:	and	v7.16b, v7.16b, v0.16b
+  a4:	addp	v2.16b, v3.16b, v4.16b
+  a8:	and	v0.16b, v16.16b, v0.16b
+  ac:	addp	v3.16b, v5.16b, v6.16b
+  b0:	addp	v1.16b, v1.16b, v2.16b
+  b4:	addp	v0.16b, v7.16b, v0.16b
+  b8:	addp	v1.16b, v1.16b, v1.16b
+  bc:	addp	v0.16b, v3.16b, v0.16b
+  c0:	str	d1, [x1]
+  c4:	addp	v0.16b, v0.16b, v0.16b
+  c8:	str	d0, [x2]
+  cc:	ret
+  → 52 instructions
   ==========
 
 
@@ -153,3 +285,5 @@ Correctness check passed (16384 blocks).
 
 sve::classify                                      :  0.069 ns/byte  14.45 GB/s   2.77 GHz   0.19 c/byte   0.67 i/byte   3.46 i/c
 neon::classify                                     :  0.088 ns/byte  11.41 GB/s   2.77 GHz   0.25 c/byte   0.94 i/byte   3.82 i/c
+
+https://github.com/liuyang-664
