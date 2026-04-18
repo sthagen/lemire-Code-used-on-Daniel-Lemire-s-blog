@@ -42,7 +42,7 @@ double pretty_print(const std::string &name, size_t num_bytes,
   if (counters::has_performance_counters()) {
     std::print(" {:5.2f} GHz ", agg.cycles() / double(agg.elapsed_ns()));
     std::print(" {:5.2f} c/byte ", agg.fastest_cycles() / double(num_bytes));
-    std::print(" {:5.2f} i ", agg.fastest_instructions());
+    std::print(" {:5.2f} i/byte ", agg.fastest_instructions() / double(num_bytes));
     std::print(" {:5.2f} i/c ",
                agg.fastest_instructions() / double(agg.fastest_cycles()));
   }
