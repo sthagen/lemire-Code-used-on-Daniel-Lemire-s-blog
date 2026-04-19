@@ -111,7 +111,7 @@ My benchmark generates a random string of 1 MiB and computes the bitmaps indicat
 | simdjson (NEON) | 11.4| 0.94 | 3.5 |
 | SVE/SVE2 (new!) | 14.4   | 0.67 | 3.8 |
 
-So the SVE/SVE2 approach is about 25% faster than the NEON equivalent, and that's without any kind of fancy optimization. Importantly, the code is significantly simpler: the simdjson approach is non-trivial in comparison.
+So the SVE/SVE2 approach is about 25% faster than the NEON equivalent and uses 30% fewer instructions, and that's without any kind of fancy optimization. Importantly, the code is relatively simple thanks the `match` instruction.
 
 It might be that the SVE2 function `match` is the fastest way to match characters on ARM processors.
 
