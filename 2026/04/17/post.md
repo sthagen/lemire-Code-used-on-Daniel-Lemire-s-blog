@@ -101,7 +101,9 @@ Interestingly, GCC 16 even adopts SVE instructions in the pure NEON code, which 
 
 I was hoping to test both compilers in a benchmark, but I wanted to quickly run my benchmarks on an AWS Graviton 4. I also did not want to compile GCC 16 from source. So I just kept LLVM clang 20 which was readily available in the images that AWS makes available (I picked RedHat 10).
 
-The AWS Graviton 4 processor is a Neoverse V2 processor. Google has its own Neoverse V2 processors in its cloud.
+The AWS Graviton 4 processor is a Neoverse V2 processor. Google has its own Neoverse V2 processors in its cloud. In my tests, it ran at 2.8 GHz.
+
+My benchmark generates a random string of 1 MiB and computes the bitmaps indicating the positions of the characters. [It is available on GitHub](https://github.com/lemire/Code-used-on-Daniel-Lemire-s-blog/tree/master/2026/04/17/benchmark). My results are as follow.
 
 
 | method  |  GB/s | instructions/byte | instructions/cycle |
@@ -109,7 +111,7 @@ The AWS Graviton 4 processor is a Neoverse V2 processor. Google has its own Neov
 | simdjson (NEON) | 11.4| 0.94 | 3.5 |
 | SVE/SVE2 (new!) | 14.4   | 0.67 | 3.8 |
 
-So it is about 25% faster than the NEON equivalent, and that's without any kind of fancy optimization. Importantly, the code is significantly simpler: the simdjson approach is non-trivial in comparison.
+So the SVE/SVE2 approach is about 25% faster than the NEON equivalent, and that's without any kind of fancy optimization. Importantly, the code is significantly simpler: the simdjson approach is non-trivial in comparison.
 
 It might be that the SVE2 function `match` is the fastest way to match characters on ARM processors.
 
