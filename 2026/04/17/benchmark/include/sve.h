@@ -2,8 +2,6 @@
 #include <arm_neon_sve_bridge.h>
 static_assert(__ARM_FEATURE_SVE_BITS == 128,
               "This code requires -msve-vector-bits=128");
-
-#include <arm_sve.h>
 #include <arm_neon.h>
 #include <cstdint>
 #include <cstddef>
