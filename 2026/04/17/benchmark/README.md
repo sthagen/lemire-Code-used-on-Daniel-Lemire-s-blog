@@ -12,6 +12,7 @@ cmake --build build
 
 
 ```
+
 ════════════════════════════════════════════════════════════════
   neon::classify  (neon_classify_asm)
 ════════════════════════════════════════════════════════════════
@@ -20,72 +21,54 @@ cmake --build build
    4:   adrp    x4, 0 <neon_classify_asm>
    8:   ldp     q29, q28, [x0, #32]
    c:   add     x3, x4, #0x0
-  10:   mov     v5.16b, v31.16b
-  14:   mov     v3.16b, v30.16b
-  18:   mov     v2.16b, v29.16b
-  1c:   mov     v1.16b, v28.16b
-  20:   ldp     q4, q24, [x3, #16]
-  24:   ldr     q27, [x4]
-  28:   and     z5.b, z5.b, #0xf
-  2c:   ushr    v31.16b, v31.16b, #4
-  30:   and     z3.b, z3.b, #0xf
-  34:   ushr    v30.16b, v30.16b, #4
-  38:   and     z2.b, z2.b, #0xf
-  3c:   ushr    v29.16b, v29.16b, #4
-  40:   ushr    v28.16b, v28.16b, #4
-  44:   and     z1.b, z1.b, #0xf
-  48:   tbl     v5.16b, {v27.16b}, v5.16b
-  4c:   tbl     v31.16b, {v4.16b}, v31.16b
-  50:   tbl     v3.16b, {v27.16b}, v3.16b
-  54:   tbl     v30.16b, {v4.16b}, v30.16b
-  58:   tbl     v2.16b, {v27.16b}, v2.16b
-  5c:   tbl     v29.16b, {v4.16b}, v29.16b
-  60:   tbl     v28.16b, {v4.16b}, v28.16b
-  64:   tbl     v1.16b, {v27.16b}, v1.16b
-  68:   and     v31.16b, v5.16b, v31.16b
-  6c:   and     v30.16b, v3.16b, v30.16b
-  70:   and     v29.16b, v2.16b, v29.16b
-  74:   and     v28.16b, v1.16b, v28.16b
-  78:   mov     v0.16b, v31.16b
-  7c:   mov     v23.16b, v30.16b
-  80:   mov     v26.16b, v29.16b
-  84:   mov     v25.16b, v28.16b
-  88:   and     z31.b, z31.b, #0x18
-  8c:   and     z30.b, z30.b, #0x18
-  90:   and     z29.b, z29.b, #0x18
-  94:   and     z28.b, z28.b, #0x18
-  98:   and     z0.b, z0.b, #0x7
-  9c:   and     z23.b, z23.b, #0x7
-  a0:   and     z26.b, z26.b, #0x7
-  a4:   and     z25.b, z25.b, #0x7
-  a8:   cmtst   v31.16b, v31.16b, v31.16b
-  ac:   cmtst   v30.16b, v30.16b, v30.16b
-  b0:   cmtst   v29.16b, v29.16b, v29.16b
-  b4:   cmtst   v28.16b, v28.16b, v28.16b
-  b8:   cmtst   v0.16b, v0.16b, v0.16b
-  bc:   cmtst   v23.16b, v23.16b, v23.16b
-  c0:   cmtst   v26.16b, v26.16b, v26.16b
-  c4:   cmtst   v25.16b, v25.16b, v25.16b
-  c8:   and     v31.16b, v31.16b, v24.16b
-  cc:   and     v30.16b, v30.16b, v24.16b
-  d0:   and     v29.16b, v29.16b, v24.16b
-  d4:   and     v28.16b, v28.16b, v24.16b
-  d8:   and     v0.16b, v0.16b, v24.16b
-  dc:   and     v23.16b, v23.16b, v24.16b
-  e0:   and     v26.16b, v26.16b, v24.16b
-  e4:   and     v25.16b, v25.16b, v24.16b
-  e8:   addp    v30.16b, v31.16b, v30.16b
-  ec:   addp    v28.16b, v29.16b, v28.16b
-  f0:   addp    v23.16b, v0.16b, v23.16b
-  f4:   addp    v25.16b, v26.16b, v25.16b
-  f8:   addp    v28.16b, v30.16b, v28.16b
-  fc:   addp    v25.16b, v23.16b, v25.16b
- 100:   addp    v28.16b, v28.16b, v28.16b
- 104:   addp    v25.16b, v25.16b, v25.16b
- 108:   str     d28, [x1]
- 10c:   str     d25, [x2]
- 110:   ret
-  → 69 instructions
+  10:   movi    v26.16b, #0x3
+  14:   ldr     q1, [x4]
+  18:   movi    v22.16b, #0x20
+  1c:   add     v25.16b, v31.16b, v26.16b
+  20:   add     v24.16b, v30.16b, v26.16b
+  24:   add     v23.16b, v29.16b, v26.16b
+  28:   add     v26.16b, v28.16b, v26.16b
+  2c:   ushr    v25.16b, v25.16b, #4
+  30:   ushr    v24.16b, v24.16b, #4
+  34:   ushr    v23.16b, v23.16b, #4
+  38:   ushr    v26.16b, v26.16b, #4
+  3c:   ldp     q0, q20, [x3, #16]
+  40:   cmeq    v21.16b, v31.16b, v22.16b
+  44:   cmeq    v19.16b, v30.16b, v22.16b
+  48:   cmeq    v27.16b, v29.16b, v22.16b
+  4c:   tbl     v25.16b, {v1.16b}, v25.16b
+  50:   tbl     v24.16b, {v1.16b}, v24.16b
+  54:   tbl     v23.16b, {v1.16b}, v23.16b
+  58:   tbl     v26.16b, {v1.16b}, v26.16b
+  5c:   cmeq    v22.16b, v28.16b, v22.16b
+  60:   cmeq    v25.16b, v31.16b, v25.16b
+  64:   cmeq    v24.16b, v30.16b, v24.16b
+  68:   cmeq    v23.16b, v29.16b, v23.16b
+  6c:   cmeq    v26.16b, v28.16b, v26.16b
+  70:   tbx     v21.16b, {v0.16b}, v31.16b
+  74:   tbx     v19.16b, {v0.16b}, v30.16b
+  78:   tbx     v27.16b, {v0.16b}, v29.16b
+  7c:   tbx     v22.16b, {v0.16b}, v28.16b
+  80:   and     v25.16b, v25.16b, v20.16b
+  84:   and     v23.16b, v23.16b, v20.16b
+  88:   and     v21.16b, v21.16b, v20.16b
+  8c:   and     v27.16b, v27.16b, v20.16b
+  90:   and     v24.16b, v24.16b, v20.16b
+  94:   and     v26.16b, v26.16b, v20.16b
+  98:   and     v19.16b, v19.16b, v20.16b
+  9c:   and     v20.16b, v22.16b, v20.16b
+  a0:   addp    v24.16b, v25.16b, v24.16b
+  a4:   addp    v26.16b, v23.16b, v26.16b
+  a8:   addp    v19.16b, v21.16b, v19.16b
+  ac:   addp    v20.16b, v27.16b, v20.16b
+  b0:   addp    v26.16b, v24.16b, v26.16b
+  b4:   addp    v20.16b, v19.16b, v20.16b
+  b8:   addp    v26.16b, v26.16b, v26.16b
+  bc:   addp    v20.16b, v20.16b, v20.16b
+  c0:   str     d20, [x1]
+  c4:   str     d26, [x2]
+  c8:   ret
+  → 51 instructions
 ```
 
 ```
