@@ -2,8 +2,6 @@
 #include <arm_neon_sve_bridge.h>
 static_assert(__ARM_FEATURE_SVE_BITS == 128,
               "This code requires -msve-vector-bits=128");
-
-#include <arm_sve.h>
 #include <arm_neon.h>
 #include <cstdint>
 #include <cstddef>
@@ -22,27 +20,17 @@ static const uint8_t ws_chars_data[16] = {
 
 // Collapse four 16-lane predicates into a single uint64_t.
 // Lane i of m_k lands at bit (k*16 + i).
-static inline uint64_t pred4x16_to_u64(svbool_t m0, svbool_t m1,
+static  __attribute__((always_inline)) inline uint64_t pred4x16_to_u64(svbool_t m0, svbool_t m1,
                                        svbool_t m2, svbool_t m3) {
-    // 0x00/0xFF materialization of each predicate in NEON form.
-    uint8x16_t b0 = svget_neonq_u8(svdup_n_u8_z(m0, 0xFF));
-    uint8x16_t b1 = svget_neonq_u8(svdup_n_u8_z(m1, 0xFF));
-    uint8x16_t b2 = svget_neonq_u8(svdup_n_u8_z(m2, 0xFF));
-    uint8x16_t b3 = svget_neonq_u8(svdup_n_u8_z(m3, 0xFF));
+    
+    const svuint8_t w = svdupq_n_u8(1, 2, 4, 8, 16, 32, 64, 128,
+                                    1, 2, 4, 8, 16, 32, 64, 128);
+    const svuint8_t zero = svdup_n_u8(0);
 
-    // Per-lane bit weights, repeated for the two 8-byte halves of each 16-byte chunk.
-    static const uint8_t weights_data[16] = {
-        1, 2, 4, 8, 16, 32, 64, 128,
-        1, 2, 4, 8, 16, 32, 64, 128
-    };
-    const uint8x16_t w = vld1q_u8(weights_data);
-
-    // Each lane becomes its bit weight (0xFF & w = w) or zero.
-    b0 = vandq_u8(b0, w);
-    b1 = vandq_u8(b1, w);
-    b2 = vandq_u8(b2, w);
-    b3 = vandq_u8(b3, w);
-
+    uint8x16_t b0 = svget_neonq_u8(svsel_u8(m0, w, zero));
+    uint8x16_t b1 = svget_neonq_u8(svsel_u8(m1, w, zero));
+    uint8x16_t b2 = svget_neonq_u8(svsel_u8(m2, w, zero));
+    uint8x16_t b3 = svget_neonq_u8(svsel_u8(m3, w, zero));
     // Tree of pairwise adds. vpaddq_u8 adds adjacent byte pairs across two
     // 16-byte vectors, giving 16 output bytes: 8 from the first operand, 8 from the second.
     //
@@ -66,7 +54,7 @@ static inline uint64_t pred4x16_to_u64(svbool_t m0, svbool_t m1,
     return vgetq_lane_u64(vreinterpretq_u64_u8(p3), 0);
 }
 
-inline std::pair<uint64_t, uint64_t> classify(const uint8_t* base) {
+ __attribute__((always_inline)) inline std::pair<uint64_t, uint64_t> classify(const uint8_t* base) {
     const svbool_t pg_all   = svptrue_b8();
     const svbool_t pg       = svptrue_pat_b8(SV_VL16);
     const svuint8_t op_chars = svld1_u8(pg_all, op_chars_data);

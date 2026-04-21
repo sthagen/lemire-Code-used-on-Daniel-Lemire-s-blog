@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import re
 import markdown
 from pathlib import Path
 
@@ -51,6 +52,40 @@ def main():
 
     # Convert
     html = md.convert(text)
+
+    # Apply inline styles to markdown tables only, without touching code block markup.
+    def _style_table_block(table_match):
+        table_html = table_match.group(0)
+
+        # Keep non-markdown tables (e.g., possible syntax-highlighter internals) unchanged.
+        if '<thead>' not in table_html or '<tbody>' not in table_html:
+            return table_html
+
+        table_html = re.sub(
+            r'<table(.*?)>',
+            '<table\\1 style="width:100%; border-collapse:collapse; margin:1.2rem 0; border:1px solid #d0d7de; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.04);">',
+            table_html,
+            count=1,
+        )
+        table_html = table_html.replace('<thead>', '<thead style="background:#f6f8fa; color:#24292f;">')
+        table_html = table_html.replace('<th>', '<th style="text-align:left; font-weight:600; border-bottom:2px solid #d0d7de; padding:0.65rem 0.8rem; vertical-align:top;">')
+        table_html = table_html.replace('<td>', '<td style="padding:0.65rem 0.8rem; border-bottom:1px solid #eaeef2; vertical-align:top;">')
+
+        # Zebra-strip tbody rows with alternating backgrounds.
+        def _style_tbody(tbody_match):
+            row_idx = {'n': 0}
+
+            def _style_tr(match):
+                row_idx['n'] += 1
+                bg = '#fbfcfd' if row_idx['n'] % 2 == 0 else '#ffffff'
+                return f'<tr style="background:{bg};">'
+
+            tbody = tbody_match.group(0)
+            return re.sub(r'<tr>', _style_tr, tbody)
+
+        return re.sub(r'<tbody>.*?</tbody>', _style_tbody, table_html, flags=re.DOTALL)
+
+    html = re.sub(r'<table\b[^>]*>.*?</table>', _style_table_block, html, flags=re.DOTALL)
 
     # Add basic CSS if requested
     if args.css:
