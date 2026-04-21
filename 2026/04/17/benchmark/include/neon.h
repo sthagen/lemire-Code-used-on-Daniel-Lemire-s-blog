@@ -5,7 +5,7 @@
 #include <utility>
 
 namespace neon {
-static inline uint64_t neon_mask4x16_to_u64(uint8x16_t m0, uint8x16_t m1,
+static  __attribute__((always_inline)) inline uint64_t neon_mask4x16_to_u64(uint8x16_t m0, uint8x16_t m1,
 											uint8x16_t m2, uint8x16_t m3) {
 	static const uint8_t weights_data[16] = {
 		1, 2, 4, 8, 16, 32, 64, 128,
@@ -26,7 +26,7 @@ static inline uint64_t neon_mask4x16_to_u64(uint8x16_t m0, uint8x16_t m1,
 	return vgetq_lane_u64(vreinterpretq_u64_u8(p3), 0);
 }
 
-inline std::pair<uint64_t, uint64_t> classify(const uint8_t* base) {
+inline __attribute__((always_inline)) std::pair<uint64_t, uint64_t> classify(const uint8_t* base) {
 	const uint8x16_t op_table = (uint8x16_t){
 		0xff, 0, ',', ':', 0, '[', ']', '{', '}', 0, 0, 0, 0, 0, 0, 0
 	};
