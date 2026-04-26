@@ -264,9 +264,9 @@ Compiling sve::classify ...
 
 
 
-Correctness check passed (16384 blocks).
 
-sve::classify                                      :  0.069 ns/byte  14.45 GB/s   2.77 GHz   0.19 c/byte   0.67 i/byte   3.46 i/c
-neon::classify                                     :  0.088 ns/byte  11.41 GB/s   2.77 GHz   0.25 c/byte   0.94 i/byte   3.82 i/c
+
+sve::classify                                      :  0.062 ns/byte  16.04 GB/s   2.55 GHz   0.17 c/byte   0.55 i/byte   3.13 i/c 
+neon::classify                                     :  0.064 ns/byte  15.54 GB/s   2.78 GHz   0.18 c/byte   0.75 i/byte   4.16 i/c 
 
 https://github.com/liuyang-664
