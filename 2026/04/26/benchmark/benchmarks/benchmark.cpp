@@ -14,6 +14,10 @@
 #include <arm_neon.h>
 #endif
 
+#ifdef __SSE2__
+#include <emmintrin.h>
+#endif
+
 
 
 struct array_container_t {
@@ -157,8 +161,8 @@ inline bool array_container_contains_binary_neon(const array_container_t *arr,
     static_assert(gap % 8 == 0, "gap must be a multiple of 8 for NEON");
     const uint16_t *carr = (const uint16_t *)arr->array;
     int32_t cardinality = arr->cardinality;
-    if (cardinality >= pos) {
-        return false;  // since elements are unique, x can be located only at index <= x
+    if (cardinality > pos + 1) {
+        cardinality = pos + 1;  // since elements are unique, x can be located only at index <= x
     }
 
     int32_t num_blocks = cardinality / gap;
@@ -276,6 +280,168 @@ inline bool array_container_contains_hybrid_neon(const array_container_t *arr,
 }
 #endif
 
+#ifdef __SSE2__
+template <size_t gap>
+inline bool array_container_contains_sse2(const array_container_t *arr,
+                                          uint16_t pos) {
+    int32_t low = 0;
+    const uint16_t *carr = (const uint16_t *)arr->array;
+    int32_t high = arr->cardinality - 1;
+
+
+    while (high >= low + gap) {
+        if (carr[low + gap] > pos) {
+            __m128i needle = _mm_set1_epi16((short)pos);
+            for(size_t r = 0; r < gap; r += 8) {
+                // SIMD check the previous 8
+                __m128i vec = _mm_loadu_si128((const __m128i *)&carr[low + r]);
+                __m128i cmp_eq = _mm_cmpeq_epi16(vec, needle);
+                if (_mm_movemask_epi8(cmp_eq) != 0) return true;
+            }
+            return false;
+        }
+        low += gap;
+    }
+
+    // Scalar check for remaining
+    for (int j = low; j <= high; j++) {
+        uint16_t v = carr[j];
+        if (v >= pos) {
+            return (v == pos);
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef __SSE2__
+template <size_t gap>
+inline bool array_container_contains_binary_sse2(const array_container_t *arr,
+                                                 uint16_t pos) {
+    static_assert(gap % 8 == 0, "gap must be a multiple of 8 for SSE2");
+    const uint16_t *carr = (const uint16_t *)arr->array;
+    int32_t cardinality = arr->cardinality;
+    if (cardinality > pos + 1) {
+        cardinality = pos + 1;  // since elements are unique, x can be located only at index <= x
+    }
+
+    int32_t num_blocks = cardinality / gap;
+
+
+    // Binary search the per-block anchors carr[(i+1)*gap - 1] to find the
+    // smallest block whose last element is >= pos.
+    int32_t lo = 0;
+    int32_t hi = num_blocks;
+    while (lo < hi) {
+        int32_t mid = (lo + hi) >> 1;
+        if (carr[(mid + 1) * gap - 1] < pos) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    if (lo < num_blocks) {
+        int32_t base = lo * gap;
+        __m128i needle = _mm_set1_epi16((short)pos);
+        for (size_t r = 0; r < gap; r += 8) {
+            __m128i vec = _mm_loadu_si128((const __m128i *)&carr[base + r]);
+            __m128i cmp_eq = _mm_cmpeq_epi16(vec, needle);
+            if (_mm_movemask_epi8(cmp_eq) != 0) return true;
+        }
+        return false;
+    }
+
+    // Tail: scalar scan over the partial block past num_blocks * gap.
+    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+        uint16_t v = carr[j];
+        if (v >= pos) {
+            return (v == pos);
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef __SSE2__
+template <size_t gap>
+inline bool array_container_contains_shotgun_sse2(const array_container_t *arr,
+                                                  uint16_t pos) {
+    static_assert(gap % 8 == 0, "gap must be a multiple of 8 for SSE2");
+    const uint16_t *carr = (const uint16_t *)arr->array;
+    int32_t cardinality = arr->cardinality;
+    int32_t num_blocks = cardinality / gap;
+
+    if (num_blocks == 0) {
+        for (int32_t j = 0; j < cardinality; j++) {
+            uint16_t v = carr[j];
+            if (v >= pos) return (v == pos);
+        }
+        return false;
+    }
+
+    // Branchless binary search over per-block anchors carr[(i+1)*gap - 1]
+    // to find the smallest block index `lo` whose anchor is >= pos.
+    int32_t base = 0;
+    int32_t n = num_blocks;
+    while (n > 3) {
+      int32_t quarter = n >> 2;
+
+      // Issue all three loads in parallel - no data dependency between them
+      int32_t k1 = carr[(base + quarter + 1) * gap - 1];
+      int32_t k2 = carr[(base + 2 * quarter + 1) * gap - 1];
+      int32_t k3 = carr[(base + 3 * quarter + 1) * gap - 1];
+
+      // Now resolve which quarter pos falls into
+      int32_t c1 = (k1 < pos);
+      int32_t c2 = (k2 < pos);
+      int32_t c3 = (k3 < pos);
+
+      base += (c1 + c2 + c3) * quarter;
+      n -= 3 * quarter;
+    }
+    while (n > 1) {
+        int32_t half = n >> 1;
+        base = (carr[(base + half + 1) * gap - 1] < pos) ? base + half : base;
+        n -= half;
+    }
+    int32_t lo = (carr[(base + 1) * gap - 1] < pos) ? base + 1 : base;
+
+    if (lo < num_blocks) {
+        int32_t blk_base = lo * gap;
+        __m128i needle = _mm_set1_epi16((short)pos);
+        for (size_t r = 0; r < gap; r += 8) {
+            __m128i vec = _mm_loadu_si128((const __m128i *)&carr[blk_base + r]);
+            __m128i cmp_eq = _mm_cmpeq_epi16(vec, needle);
+            if (_mm_movemask_epi8(cmp_eq) != 0) return true;
+        }
+        return false;
+    }
+
+    // Tail beyond num_blocks * gap.
+    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+        uint16_t v = carr[j];
+        if (v >= pos) return (v == pos);
+    }
+    return false;
+}
+#endif
+
+#ifdef __SSE2__
+inline bool array_container_contains_hybrid_sse2(const array_container_t *arr,
+                                                 uint16_t pos) {
+    size_t card = arr->cardinality;
+    if (card <= 16) {
+        const uint16_t *carr = arr->array;
+        for (size_t i = 0; i < card; i++) {
+            if (carr[i] == pos) return true;
+        }
+        return false;
+    }
+    if (card <= 32) return array_container_contains_binary_sse2<32>(arr, pos);
+    return array_container_contains_sse2<32>(arr, pos);
+}
+#endif
+
 
 // All make_bench_* helpers walk a flat (indices, keys) sequence: query i hits
 // arrays[indices[i]] with keys[i]. Cold and warm modes use the same loop body
@@ -369,6 +535,75 @@ inline auto make_bench_hybrid_neon_search(const std::vector<std::vector<uint16_t
 }
 #endif
 
+#ifdef __SSE2__
+template <size_t gap>
+auto make_bench_sse2_search(const std::vector<std::vector<uint16_t>>& arrays,
+                            const std::vector<size_t>& indices,
+                            const std::vector<uint16_t>& keys,
+                            volatile uint64_t& counter) {
+  return [&arrays, &indices, &keys, &counter]() {
+    size_t c = 0;
+    size_t n = indices.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto &arr = arrays[indices[i]];
+      array_container_t container{arr.data(), arr.size()};
+      if (array_container_contains_sse2<gap>(&container, keys[i])) ++c;
+    }
+    counter += c;
+  };
+}
+
+template <size_t gap>
+auto make_bench_binary_sse2_search(const std::vector<std::vector<uint16_t>>& arrays,
+                                   const std::vector<size_t>& indices,
+                                   const std::vector<uint16_t>& keys,
+                                   volatile uint64_t& counter) {
+  return [&arrays, &indices, &keys, &counter]() {
+    size_t c = 0;
+    size_t n = indices.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto &arr = arrays[indices[i]];
+      array_container_t container{arr.data(), arr.size()};
+      if (array_container_contains_binary_sse2<gap>(&container, keys[i])) ++c;
+    }
+    counter += c;
+  };
+}
+
+template <size_t gap>
+auto make_bench_shotgun_sse2_search(const std::vector<std::vector<uint16_t>>& arrays,
+                                    const std::vector<size_t>& indices,
+                                    const std::vector<uint16_t>& keys,
+                                    volatile uint64_t& counter) {
+  return [&arrays, &indices, &keys, &counter]() {
+    size_t c = 0;
+    size_t n = indices.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto &arr = arrays[indices[i]];
+      array_container_t container{arr.data(), arr.size()};
+      if (array_container_contains_shotgun_sse2<gap>(&container, keys[i])) ++c;
+    }
+    counter += c;
+  };
+}
+
+inline auto make_bench_hybrid_sse2_search(const std::vector<std::vector<uint16_t>>& arrays,
+                                          const std::vector<size_t>& indices,
+                                          const std::vector<uint16_t>& keys,
+                                          volatile uint64_t& counter) {
+  return [&arrays, &indices, &keys, &counter]() {
+    size_t c = 0;
+    size_t n = indices.size();
+    for (size_t i = 0; i < n; ++i) {
+      const auto &arr = arrays[indices[i]];
+      array_container_t container{arr.data(), arr.size()};
+      if (array_container_contains_hybrid_sse2(&container, keys[i])) ++c;
+    }
+    counter += c;
+  };
+}
+#endif
+
 double pretty_print(const std::string &name, const std::string &mode,
                     size_t num_values, counters::event_aggregate agg) {
   std::print("{:<40} {:<4} : ", name, mode);
@@ -437,6 +672,71 @@ void collect_benchmark_results(size_t array_size, size_t number_arrays,
   std::print("arrays: {}  size per array: {}  warmth: {}  total queries per mode: {}\n",
              number_arrays, array_size, warmth, total);
 
+  // Verification phase: every algorithm must agree with std::binary_search on
+  // a slice of the generated queries. Aborts on the first batch of mismatches.
+  {
+    size_t check_count = std::min<size_t>(total, size_t(10000));
+    size_t mismatches = 0;
+    auto check_one = [&](const char *name, bool got, bool expected,
+                         const std::vector<uint16_t> &arr, uint16_t k) {
+      if (got != expected) {
+        if (mismatches < 5) {
+          std::print("MISMATCH: {} arr_size={} key={} expected={} got={}\n",
+                     name, arr.size(), k, expected, got);
+        }
+        ++mismatches;
+      }
+    };
+    for (size_t i = 0; i < check_count; ++i) {
+      const auto &arr = arrays[indices_cold[i]];
+      uint16_t k = keys[i];
+      array_container_t container{arr.data(), arr.size()};
+      bool expected = std::binary_search(arr.begin(), arr.end(), k);
+      check_one("custom_search", array_container_contains(&container, k), expected, arr, k);
+      check_one("old_custom_search", array_container_contains_old(&container, k), expected, arr, k);
+      check_one("naive_search<8>",  array_container_contains_naive<8>(&container, k),  expected, arr, k);
+      check_one("naive_search<16>", array_container_contains_naive<16>(&container, k), expected, arr, k);
+      check_one("naive_search<24>", array_container_contains_naive<24>(&container, k), expected, arr, k);
+      check_one("naive_search<32>", array_container_contains_naive<32>(&container, k), expected, arr, k);
+#ifdef __ARM_NEON
+      check_one("neon_search<8>",  array_container_contains_neon<8>(&container, k),  expected, arr, k);
+      check_one("neon_search<16>", array_container_contains_neon<16>(&container, k), expected, arr, k);
+      check_one("neon_search<24>", array_container_contains_neon<24>(&container, k), expected, arr, k);
+      check_one("neon_search<32>", array_container_contains_neon<32>(&container, k), expected, arr, k);
+      check_one("binary_neon_search<8>",  array_container_contains_binary_neon<8>(&container, k),  expected, arr, k);
+      check_one("binary_neon_search<16>", array_container_contains_binary_neon<16>(&container, k), expected, arr, k);
+      check_one("binary_neon_search<24>", array_container_contains_binary_neon<24>(&container, k), expected, arr, k);
+      check_one("binary_neon_search<32>", array_container_contains_binary_neon<32>(&container, k), expected, arr, k);
+      check_one("shotgun_neon_search<8>",  array_container_contains_shotgun_neon<8>(&container, k),  expected, arr, k);
+      check_one("shotgun_neon_search<16>", array_container_contains_shotgun_neon<16>(&container, k), expected, arr, k);
+      check_one("shotgun_neon_search<24>", array_container_contains_shotgun_neon<24>(&container, k), expected, arr, k);
+      check_one("shotgun_neon_search<32>", array_container_contains_shotgun_neon<32>(&container, k), expected, arr, k);
+      check_one("hybrid_neon_search", array_container_contains_hybrid_neon(&container, k), expected, arr, k);
+#endif
+#ifdef __SSE2__
+      check_one("sse2_search<8>",  array_container_contains_sse2<8>(&container, k),  expected, arr, k);
+      check_one("sse2_search<16>", array_container_contains_sse2<16>(&container, k), expected, arr, k);
+      check_one("sse2_search<24>", array_container_contains_sse2<24>(&container, k), expected, arr, k);
+      check_one("sse2_search<32>", array_container_contains_sse2<32>(&container, k), expected, arr, k);
+      check_one("binary_sse2_search<8>",  array_container_contains_binary_sse2<8>(&container, k),  expected, arr, k);
+      check_one("binary_sse2_search<16>", array_container_contains_binary_sse2<16>(&container, k), expected, arr, k);
+      check_one("binary_sse2_search<24>", array_container_contains_binary_sse2<24>(&container, k), expected, arr, k);
+      check_one("binary_sse2_search<32>", array_container_contains_binary_sse2<32>(&container, k), expected, arr, k);
+      check_one("shotgun_sse2_search<8>",  array_container_contains_shotgun_sse2<8>(&container, k),  expected, arr, k);
+      check_one("shotgun_sse2_search<16>", array_container_contains_shotgun_sse2<16>(&container, k), expected, arr, k);
+      check_one("shotgun_sse2_search<24>", array_container_contains_shotgun_sse2<24>(&container, k), expected, arr, k);
+      check_one("shotgun_sse2_search<32>", array_container_contains_shotgun_sse2<32>(&container, k), expected, arr, k);
+      check_one("hybrid_sse2_search", array_container_contains_hybrid_sse2(&container, k), expected, arr, k);
+#endif
+    }
+    if (mismatches > 0) {
+      std::print("FAIL: {} mismatches across {} queries — aborting\n", mismatches, check_count);
+      std::exit(1);
+    }
+    std::print("verification passed: {} queries × all algorithms agree with std::binary_search\n",
+               check_count);
+  }
+
   auto run_pair = [&](const char *base, auto cold_make, auto warm_make) {
     if (run_cold) {
       pretty_print(base, "cold", total, counters::bench(cold_make()));
@@ -469,6 +769,21 @@ void collect_benchmark_results(size_t array_size, size_t number_arrays,
   RUN_PAIR_TEMPLATE("neon_search24", make_bench_neon_search<24>);
   RUN_PAIR_TEMPLATE("neon_search32", make_bench_neon_search<32>);
   RUN_PAIR_TEMPLATE("hybrid_neon_search", make_bench_hybrid_neon_search);
+#endif
+#ifdef __SSE2__
+  RUN_PAIR_TEMPLATE("binary_sse2_search8",  make_bench_binary_sse2_search<8>);
+  RUN_PAIR_TEMPLATE("binary_sse2_search16", make_bench_binary_sse2_search<16>);
+  RUN_PAIR_TEMPLATE("binary_sse2_search24", make_bench_binary_sse2_search<24>);
+  RUN_PAIR_TEMPLATE("binary_sse2_search32", make_bench_binary_sse2_search<32>);
+  RUN_PAIR_TEMPLATE("shotgun_sse2_search8",  make_bench_shotgun_sse2_search<8>);
+  RUN_PAIR_TEMPLATE("shotgun_sse2_search16", make_bench_shotgun_sse2_search<16>);
+  RUN_PAIR_TEMPLATE("shotgun_sse2_search24", make_bench_shotgun_sse2_search<24>);
+  RUN_PAIR_TEMPLATE("shotgun_sse2_search32", make_bench_shotgun_sse2_search<32>);
+  RUN_PAIR_TEMPLATE("sse2_search8",  make_bench_sse2_search<8>);
+  RUN_PAIR_TEMPLATE("sse2_search16", make_bench_sse2_search<16>);
+  RUN_PAIR_TEMPLATE("sse2_search24", make_bench_sse2_search<24>);
+  RUN_PAIR_TEMPLATE("sse2_search32", make_bench_sse2_search<32>);
+  RUN_PAIR_TEMPLATE("hybrid_sse2_search", make_bench_hybrid_sse2_search);
 #endif
 #undef RUN_PAIR_TEMPLATE
 
