@@ -1,0 +1,120 @@
+arrays: 100000  size per array: 2  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  1.878 ns   0.53 Gv/s   3.44 GHz   6.55 c  26.00 i   0.00 bm   3.97 i/c 
+simd_quad                                warm :  1.687 ns   0.59 Gv/s   3.43 GHz   5.87 c  26.00 i   0.00 bm   4.43 i/c 
+simd_binary                              cold :  1.878 ns   0.53 Gv/s   3.46 GHz   6.55 c  25.00 i   0.00 bm   3.82 i/c 
+simd_binary                              warm :  1.733 ns   0.58 Gv/s   3.44 GHz   6.03 c  25.00 i   0.00 bm   4.14 i/c 
+binary_search                            cold :  10.738 ns   0.09 Gv/s   3.44 GHz  37.42 c  36.32 i   0.68 bm   0.97 i/c 
+binary_search                            warm :  8.826 ns   0.11 Gv/s   3.44 GHz  30.77 c  36.33 i   0.52 bm   1.18 i/c 
+find                                     cold :  1.979 ns   0.51 Gv/s   3.44 GHz   6.90 c  24.00 i   0.00 bm   3.48 i/c 
+find                                     warm :  1.444 ns   0.69 Gv/s   3.46 GHz   5.03 c  24.00 i   0.00 bm   4.77 i/c 
+arrays: 100000  size per array: 4  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  2.036 ns   0.49 Gv/s   3.44 GHz   7.10 c  34.00 i   0.00 bm   4.79 i/c 
+simd_quad                                warm :  2.056 ns   0.49 Gv/s   3.45 GHz   7.16 c  34.00 i   0.00 bm   4.75 i/c 
+simd_binary                              cold :  1.846 ns   0.54 Gv/s   3.45 GHz   6.44 c  33.00 i   0.00 bm   5.13 i/c 
+simd_binary                              warm :  1.813 ns   0.55 Gv/s   3.46 GHz   6.32 c  33.00 i   0.00 bm   5.22 i/c 
+binary_search                            cold :  14.485 ns   0.07 Gv/s   3.43 GHz  50.48 c  45.00 i   1.04 bm   0.89 i/c 
+binary_search                            warm :  12.897 ns   0.08 Gv/s   3.45 GHz  44.93 c  45.00 i   0.89 bm   1.00 i/c 
+find                                     cold :  2.142 ns   0.47 Gv/s   3.46 GHz   7.47 c  38.00 i   0.00 bm   5.09 i/c 
+find                                     warm :  2.076 ns   0.48 Gv/s   3.45 GHz   7.24 c  38.00 i   0.00 bm   5.25 i/c 
+arrays: 100000  size per array: 8  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  2.886 ns   0.35 Gv/s   3.47 GHz  10.06 c  50.00 i   0.00 bm   4.97 i/c 
+simd_quad                                warm :  2.905 ns   0.34 Gv/s   3.45 GHz  10.13 c  50.00 i   0.00 bm   4.94 i/c 
+simd_binary                              cold :  2.894 ns   0.35 Gv/s   3.48 GHz  10.09 c  49.00 i   0.00 bm   4.86 i/c 
+simd_binary                              warm :  2.908 ns   0.34 Gv/s   3.44 GHz  10.13 c  49.00 i   0.00 bm   4.83 i/c 
+binary_search                            cold :  19.203 ns   0.05 Gv/s   3.48 GHz  66.86 c  54.67 i   1.51 bm   0.82 i/c 
+binary_search                            warm :  17.798 ns   0.06 Gv/s   3.46 GHz  62.04 c  54.67 i   1.36 bm   0.88 i/c 
+find                                     cold :  3.175 ns   0.32 Gv/s   3.44 GHz  11.07 c  49.00 i   0.00 bm   4.43 i/c 
+find                                     warm :  3.190 ns   0.31 Gv/s   3.46 GHz  11.12 c  49.00 i   0.00 bm   4.41 i/c 
+arrays: 100000  size per array: 16  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  3.171 ns   0.32 Gv/s   3.44 GHz  11.05 c  42.53 i   0.06 bm   3.85 i/c 
+simd_quad                                warm :  2.878 ns   0.35 Gv/s   3.44 GHz  10.03 c  42.53 i   0.06 bm   4.24 i/c 
+simd_binary                              cold :  2.570 ns   0.39 Gv/s   3.43 GHz   8.96 c  28.82 i   0.06 bm   3.22 i/c 
+simd_binary                              warm :  2.191 ns   0.46 Gv/s   3.45 GHz   7.64 c  28.82 i   0.06 bm   3.77 i/c 
+binary_search                            cold :  24.530 ns   0.04 Gv/s   3.45 GHz  85.43 c  65.12 i   2.05 bm   0.76 i/c 
+binary_search                            warm :  22.926 ns   0.04 Gv/s   3.44 GHz  79.90 c  65.12 i   1.89 bm   0.81 i/c 
+find                                     cold :  4.699 ns   0.21 Gv/s   3.41 GHz  16.38 c  70.99 i   0.00 bm   4.33 i/c 
+find                                     warm :  4.678 ns   0.21 Gv/s   3.48 GHz  16.30 c  70.99 i   0.00 bm   4.36 i/c 
+arrays: 100000  size per array: 32  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  4.933 ns   0.20 Gv/s   3.39 GHz  17.19 c  57.76 i   0.03 bm   3.36 i/c 
+simd_quad                                warm :  4.161 ns   0.24 Gv/s   3.48 GHz  14.51 c  57.76 i   0.03 bm   3.98 i/c 
+simd_binary                              cold :  4.599 ns   0.22 Gv/s   3.48 GHz  16.03 c  58.76 i   0.03 bm   3.67 i/c 
+simd_binary                              warm :  3.981 ns   0.25 Gv/s   3.48 GHz  13.88 c  58.76 i   0.03 bm   4.23 i/c 
+binary_search                            cold :  30.456 ns   0.03 Gv/s   3.45 GHz  106.07 c  76.06 i   2.67 bm   0.72 i/c 
+binary_search                            warm :  28.703 ns   0.03 Gv/s   3.46 GHz  99.99 c  76.06 i   2.53 bm   0.76 i/c 
+find                                     cold :  7.112 ns   0.14 Gv/s   3.48 GHz  24.77 c  114.98 i   0.00 bm   4.64 i/c 
+find                                     warm :  7.068 ns   0.14 Gv/s   3.43 GHz  24.62 c  114.98 i   0.00 bm   4.67 i/c 
+arrays: 100000  size per array: 64  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  6.879 ns   0.15 Gv/s   3.46 GHz  23.97 c  73.88 i   0.02 bm   3.08 i/c 
+simd_quad                                warm :  5.688 ns   0.18 Gv/s   3.42 GHz  19.83 c  73.88 i   0.02 bm   3.73 i/c 
+simd_binary                              cold :  7.004 ns   0.14 Gv/s   3.43 GHz  24.40 c  69.88 i   0.02 bm   2.86 i/c 
+simd_binary                              warm :  5.049 ns   0.20 Gv/s   3.48 GHz  17.59 c  69.88 i   0.02 bm   3.97 i/c 
+binary_search                            cold :  37.667 ns   0.03 Gv/s   3.45 GHz  131.14 c  87.28 i   3.37 bm   0.67 i/c 
+binary_search                            warm :  34.709 ns   0.03 Gv/s   3.47 GHz  120.93 c  87.28 i   3.24 bm   0.72 i/c 
+find                                     cold :  12.771 ns   0.08 Gv/s   3.45 GHz  44.51 c  202.91 i   0.00 bm   4.56 i/c 
+find                                     warm :  12.689 ns   0.08 Gv/s   3.46 GHz  44.26 c  202.91 i   0.00 bm   4.58 i/c 
+arrays: 100000  size per array: 128  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  10.167 ns   0.10 Gv/s   3.44 GHz  35.41 c  88.94 i   0.01 bm   2.51 i/c 
+simd_quad                                warm :  6.679 ns   0.15 Gv/s   3.48 GHz  23.29 c  88.94 i   0.01 bm   3.82 i/c 
+simd_binary                              cold :  11.633 ns   0.09 Gv/s   3.45 GHz  40.50 c  80.94 i   0.01 bm   2.00 i/c 
+simd_binary                              warm :  6.411 ns   0.16 Gv/s   3.42 GHz  22.35 c  80.94 i   0.01 bm   3.62 i/c 
+binary_search                            cold :  45.932 ns   0.02 Gv/s   3.45 GHz  159.93 c  98.64 i   4.15 bm   0.62 i/c 
+binary_search                            warm :  41.184 ns   0.02 Gv/s   3.45 GHz  143.51 c  98.64 i   4.04 bm   0.69 i/c 
+find                                     cold :  24.542 ns   0.04 Gv/s   3.45 GHz  85.49 c  378.65 i   0.00 bm   4.43 i/c 
+find                                     warm :  24.258 ns   0.04 Gv/s   3.45 GHz  84.55 c  378.65 i   0.00 bm   4.48 i/c 
+arrays: 100000  size per array: 256  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  19.423 ns   0.05 Gv/s   3.44 GHz  67.67 c  99.97 i   0.00 bm   1.48 i/c 
+simd_quad                                warm :  8.743 ns   0.11 Gv/s   3.48 GHz  30.49 c  99.97 i   0.00 bm   3.28 i/c 
+simd_binary                              cold :  21.675 ns   0.05 Gv/s   3.45 GHz  75.44 c  91.97 i   0.00 bm   1.22 i/c 
+simd_binary                              warm :  7.617 ns   0.13 Gv/s   3.48 GHz  26.55 c  91.97 i   0.00 bm   3.46 i/c 
+binary_search                            cold :  56.208 ns   0.02 Gv/s   3.45 GHz  195.71 c  110.07 i   4.83 bm   0.56 i/c 
+binary_search                            warm :  47.314 ns   0.02 Gv/s   3.48 GHz  164.92 c  110.07 i   4.76 bm   0.67 i/c 
+find                                     cold :  50.708 ns   0.02 Gv/s   3.46 GHz  176.52 c  729.61 i   0.00 bm   4.13 i/c 
+find                                     warm :  47.466 ns   0.02 Gv/s   3.46 GHz  165.42 c  729.62 i   0.00 bm   4.41 i/c 
+arrays: 100000  size per array: 512  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  56.590 ns   0.02 Gv/s   3.44 GHz  196.87 c  114.98 i   0.00 bm   0.58 i/c 
+simd_quad                                warm :  10.297 ns   0.10 Gv/s   3.48 GHz  35.89 c  114.98 i   0.00 bm   3.20 i/c 
+simd_binary                              cold :  60.970 ns   0.02 Gv/s   3.45 GHz  212.16 c  102.98 i   0.00 bm   0.49 i/c 
+simd_binary                              warm :  9.944 ns   0.10 Gv/s   3.44 GHz  34.66 c  102.98 i   0.00 bm   2.97 i/c 
+binary_search                            cold :  83.979 ns   0.01 Gv/s   3.46 GHz  292.18 c  121.53 i   5.36 bm   0.42 i/c 
+binary_search                            warm :  52.838 ns   0.02 Gv/s   3.45 GHz  184.12 c  121.53 i   5.36 bm   0.66 i/c 
+find                                     cold :  130.530 ns   0.01 Gv/s   3.45 GHz  450.47 c  1429.46 i   0.02 bm   3.17 i/c 
+find                                     warm :  93.878 ns   0.01 Gv/s   3.45 GHz  327.18 c  1429.46 i   0.02 bm   4.37 i/c 
+arrays: 100000  size per array: 1024  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  93.121 ns   0.01 Gv/s   3.46 GHz  324.17 c  125.99 i   0.00 bm   0.39 i/c 
+simd_quad                                warm :  14.949 ns   0.07 Gv/s   3.46 GHz  52.10 c  125.99 i   0.00 bm   2.42 i/c 
+simd_binary                              cold :  117.305 ns   0.01 Gv/s   3.45 GHz  404.84 c  113.99 i   0.00 bm   0.28 i/c 
+simd_binary                              warm :  13.261 ns   0.08 Gv/s   3.42 GHz  46.20 c  113.99 i   0.00 bm   2.47 i/c 
+binary_search                            cold :  118.262 ns   0.01 Gv/s   3.45 GHz  407.88 c  133.02 i   5.82 bm   0.33 i/c 
+binary_search                            warm :  58.903 ns   0.02 Gv/s   3.45 GHz  205.25 c  133.02 i   5.89 bm   0.65 i/c 
+find                                     cold :  284.492 ns   0.00 Gv/s   3.45 GHz  986.39 c  2820.97 i   1.03 bm   2.86 i/c 
+find                                     warm :  201.389 ns   0.00 Gv/s   3.45 GHz  694.88 c  2820.99 i   1.37 bm   4.06 i/c 
+arrays: 100000  size per array: 2048  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  122.484 ns   0.01 Gv/s   3.46 GHz  426.30 c  141.00 i   0.00 bm   0.33 i/c 
+simd_quad                                warm :  21.247 ns   0.05 Gv/s   3.45 GHz  73.95 c  141.00 i   0.00 bm   1.91 i/c 
+simd_binary                              cold :  156.991 ns   0.01 Gv/s   3.45 GHz  543.02 c  125.00 i   0.00 bm   0.23 i/c 
+simd_binary                              warm :  21.489 ns   0.05 Gv/s   3.45 GHz  74.83 c  125.00 i   0.00 bm   1.67 i/c 
+binary_search                            cold :  155.951 ns   0.01 Gv/s   3.45 GHz  538.85 c  144.51 i   6.30 bm   0.27 i/c 
+binary_search                            warm :  65.975 ns   0.02 Gv/s   3.46 GHz  229.91 c  144.51 i   6.42 bm   0.63 i/c 
+find                                     cold :  561.202 ns   0.00 Gv/s   3.45 GHz  1937.79 c  5570.83 i   1.25 bm   2.87 i/c 
+find                                     warm :  389.496 ns   0.00 Gv/s   3.45 GHz  1346.00 c  5571.39 i   1.53 bm   4.14 i/c 
+arrays: 100000  size per array: 4096  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  176.783 ns   0.01 Gv/s   3.45 GHz  615.27 c  152.00 i   0.00 bm   0.25 i/c 
+simd_quad                                warm :  29.979 ns   0.03 Gv/s   3.44 GHz  104.39 c  152.00 i   0.00 bm   1.46 i/c 
+simd_binary                              cold :  193.784 ns   0.01 Gv/s   3.45 GHz  667.24 c  136.00 i   0.00 bm   0.20 i/c 
+simd_binary                              warm :  34.745 ns   0.03 Gv/s   3.47 GHz  120.93 c  136.00 i   0.00 bm   1.12 i/c 
+binary_search                            cold :  197.722 ns   0.01 Gv/s   3.46 GHz  688.09 c  156.00 i   6.79 bm   0.23 i/c 
+binary_search                            warm :  75.064 ns   0.01 Gv/s   3.45 GHz  261.47 c  156.00 i   6.92 bm   0.60 i/c 
+find                                     cold :  1114.078 ns   0.00 Gv/s   3.46 GHz  3869.33 c  10938.81 i   1.32 bm   2.83 i/c 
+find                                     warm :  745.887 ns   0.00 Gv/s   3.45 GHz  2580.10 c  10938.88 i   1.20 bm   4.24 i/c 
