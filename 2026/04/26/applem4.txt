@@ -1,0 +1,120 @@
+arrays: 100000  size per array: 2  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  0.773 ns   1.29 Gv/s 
+simd_quad                                warm :  0.735 ns   1.36 Gv/s 
+simd_binary                              cold :  0.776 ns   1.29 Gv/s 
+simd_binary                              warm :  0.711 ns   1.41 Gv/s 
+binary_search                            cold :  3.974 ns   0.25 Gv/s 
+binary_search                            warm :  3.548 ns   0.28 Gv/s 
+find                                     cold :  0.882 ns   1.13 Gv/s 
+find                                     warm :  0.809 ns   1.24 Gv/s 
+arrays: 100000  size per array: 4  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  1.241 ns   0.81 Gv/s 
+simd_quad                                warm :  1.200 ns   0.83 Gv/s 
+simd_binary                              cold :  1.212 ns   0.82 Gv/s 
+simd_binary                              warm :  1.202 ns   0.83 Gv/s 
+binary_search                            cold :  7.526 ns   0.13 Gv/s 
+binary_search                            warm :  6.748 ns   0.15 Gv/s 
+find                                     cold :  1.058 ns   0.95 Gv/s 
+find                                     warm :  1.014 ns   0.99 Gv/s 
+arrays: 100000  size per array: 8  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  2.154 ns   0.46 Gv/s 
+simd_quad                                warm :  2.136 ns   0.47 Gv/s 
+simd_binary                              cold :  2.142 ns   0.47 Gv/s 
+simd_binary                              warm :  2.149 ns   0.47 Gv/s 
+binary_search                            cold :  5.871 ns   0.17 Gv/s 
+binary_search                            warm :  5.858 ns   0.17 Gv/s 
+find                                     cold :  1.527 ns   0.66 Gv/s 
+find                                     warm :  1.546 ns   0.65 Gv/s 
+arrays: 100000  size per array: 16  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  1.635 ns   0.61 Gv/s 
+simd_quad                                warm :  1.664 ns   0.60 Gv/s 
+simd_binary                              cold :  1.484 ns   0.67 Gv/s 
+simd_binary                              warm :  1.508 ns   0.66 Gv/s 
+binary_search                            cold :  4.915 ns   0.20 Gv/s 
+binary_search                            warm :  4.993 ns   0.20 Gv/s 
+find                                     cold :  2.749 ns   0.36 Gv/s 
+find                                     warm :  2.668 ns   0.37 Gv/s 
+arrays: 100000  size per array: 32  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  1.669 ns   0.60 Gv/s 
+simd_quad                                warm :  1.607 ns   0.62 Gv/s 
+simd_binary                              cold :  1.762 ns   0.57 Gv/s 
+simd_binary                              warm :  1.733 ns   0.58 Gv/s 
+binary_search                            cold :  4.679 ns   0.21 Gv/s 
+binary_search                            warm :  4.983 ns   0.20 Gv/s 
+find                                     cold :  5.368 ns   0.19 Gv/s 
+find                                     warm :  5.373 ns   0.19 Gv/s 
+arrays: 100000  size per array: 64  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  2.333 ns   0.43 Gv/s 
+simd_quad                                warm :  2.378 ns   0.42 Gv/s 
+simd_binary                              cold :  2.119 ns   0.47 Gv/s 
+simd_binary                              warm :  2.076 ns   0.48 Gv/s 
+binary_search                            cold :  5.247 ns   0.19 Gv/s 
+binary_search                            warm :  5.363 ns   0.19 Gv/s 
+find                                     cold :  10.409 ns   0.10 Gv/s 
+find                                     warm :  10.431 ns   0.10 Gv/s 
+arrays: 100000  size per array: 128  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  2.914 ns   0.34 Gv/s 
+simd_quad                                warm :  2.822 ns   0.35 Gv/s 
+simd_binary                              cold :  2.873 ns   0.35 Gv/s 
+simd_binary                              warm :  2.572 ns   0.39 Gv/s 
+binary_search                            cold :  6.237 ns   0.16 Gv/s 
+binary_search                            warm :  6.144 ns   0.16 Gv/s 
+find                                     cold :  20.626 ns   0.05 Gv/s 
+find                                     warm :  20.619 ns   0.05 Gv/s 
+arrays: 100000  size per array: 256  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  5.816 ns   0.17 Gv/s 
+simd_quad                                warm :  3.768 ns   0.27 Gv/s 
+simd_binary                              cold :  9.046 ns   0.11 Gv/s 
+simd_binary                              warm :  3.174 ns   0.32 Gv/s 
+binary_search                            cold :  15.475 ns   0.06 Gv/s 
+binary_search                            warm :  7.082 ns   0.14 Gv/s 
+find                                     cold :  41.079 ns   0.02 Gv/s 
+find                                     warm :  39.948 ns   0.03 Gv/s 
+arrays: 100000  size per array: 512  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  15.399 ns   0.06 Gv/s 
+simd_quad                                warm :  4.436 ns   0.23 Gv/s 
+simd_binary                              cold :  23.530 ns   0.04 Gv/s 
+simd_binary                              warm :  3.877 ns   0.26 Gv/s 
+binary_search                            cold :  42.862 ns   0.02 Gv/s 
+binary_search                            warm :  7.826 ns   0.13 Gv/s 
+find                                     cold :  85.977 ns   0.01 Gv/s 
+find                                     warm :  84.410 ns   0.01 Gv/s 
+arrays: 100000  size per array: 1024  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  40.894 ns   0.02 Gv/s 
+simd_quad                                warm :  5.696 ns   0.18 Gv/s 
+simd_binary                              cold :  36.915 ns   0.03 Gv/s 
+simd_binary                              warm :  4.763 ns   0.21 Gv/s 
+binary_search                            cold :  70.189 ns   0.01 Gv/s 
+binary_search                            warm :  8.746 ns   0.11 Gv/s 
+find                                     cold :  162.744 ns   0.01 Gv/s 
+find                                     warm :  157.901 ns   0.01 Gv/s 
+arrays: 100000  size per array: 2048  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  45.842 ns   0.02 Gv/s 
+simd_quad                                warm :  6.888 ns   0.15 Gv/s 
+simd_binary                              cold :  47.998 ns   0.02 Gv/s 
+simd_binary                              warm :  5.941 ns   0.17 Gv/s 
+binary_search                            cold :  97.477 ns   0.01 Gv/s 
+binary_search                            warm :  9.990 ns   0.10 Gv/s 
+find                                     cold :  313.446 ns   0.00 Gv/s 
+find                                     warm :  303.708 ns   0.00 Gv/s 
+arrays: 100000  size per array: 4096  warmth: 100  total queries per mode: 10000000
+verification passed: 10000 queries × all algorithms agree with std::binary_search
+simd_quad                                cold :  60.802 ns   0.02 Gv/s 
+simd_quad                                warm :  9.035 ns   0.11 Gv/s 
+simd_binary                              cold :  63.278 ns   0.02 Gv/s 
+simd_binary                              warm :  7.877 ns   0.13 Gv/s 
+binary_search                            cold :  147.074 ns   0.01 Gv/s 
+binary_search                            warm :  11.797 ns   0.08 Gv/s 
+find                                     cold :  615.363 ns   0.00 Gv/s 
+find                                     warm :  588.669 ns   0.00 Gv/s 
