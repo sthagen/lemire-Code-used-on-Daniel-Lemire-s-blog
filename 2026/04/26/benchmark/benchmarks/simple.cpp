@@ -85,6 +85,52 @@ __attribute__((always_inline)) inline bool simd_quad(const array_container_t *ar
 }
 
 
+__attribute__((always_inline)) inline bool simd_binary(const array_container_t *arr, uint16_t pos) {
+    constexpr int32_t gap = 16;
+    const uint16_t *carr = arr->array;
+    int32_t cardinality = arr->cardinality;
+    if (cardinality < gap) {
+      for (int32_t j = 0; j < cardinality; j++) {
+          if (carr[j] == pos) return true;
+        }
+        return false;
+    }
+    int32_t num_blocks = cardinality / gap;
+    int32_t base = 0;
+    int32_t n = num_blocks;
+    while (n > 1) {
+        int32_t half = n >> 1;
+        base = (carr[(base + half + 1) * gap - 1] < pos) ? base + half : base;
+        n -= half;
+    }
+    int32_t lo = (carr[(base + 1) * gap - 1] < pos) ? base + 1 : base;
+
+    if (lo < num_blocks) {
+        const uint16_t *blk = carr + lo * gap;
+#ifdef __ARM_NEON
+        uint16x8_t needle = vdupq_n_u16(pos);
+        uint16x8_t v0 = vld1q_u16(blk);
+        uint16x8_t v1 = vld1q_u16(blk + 8);
+        uint16x8_t hit = vorrq_u16(vceqq_u16(v0, needle), vceqq_u16(v1, needle));
+        return vmaxvq_u16(hit) != 0;
+#else
+        __m128i needle = _mm_set1_epi16((short)pos);
+        __m128i v0 = _mm_loadu_si128((const __m128i *)blk);
+        __m128i v1 = _mm_loadu_si128((const __m128i *)(blk + 8));
+        __m128i hit = _mm_or_si128(_mm_cmpeq_epi16(v0, needle),
+                                   _mm_cmpeq_epi16(v1, needle));
+        return _mm_movemask_epi8(hit) != 0;
+#endif
+    }
+
+    for (int32_t j = num_blocks * gap; j < cardinality; j++) {
+        uint16_t v = carr[j];
+        if (v >= pos) return (v == pos);
+    }
+    return false;
+}
+
+
 double pretty_print(const std::string &name, const std::string &mode,
                     size_t num_values, counters::event_aggregate agg) {
   std::print("{:<40} {:<4} : ", name, mode);
@@ -170,6 +216,7 @@ void collect_benchmark_results(size_t array_size, size_t number_arrays,
       array_container_t container{arr.data(), arr.size()};
       bool expected = std::binary_search(arr.begin(), arr.end(), k);
       check_one("simd_quad", simd_quad(&container, k), expected, arr, k);
+      check_one("simd_binary", simd_binary(&container, k), expected, arr, k);
     }
     if (mismatches > 0) {
       std::print("FAIL: {} mismatches across {} queries — aborting\n", mismatches, check_count);
@@ -201,6 +248,10 @@ void collect_benchmark_results(size_t array_size, size_t number_arrays,
   bench_inline("simd_quad", [](const std::vector<uint16_t> &arr, uint16_t k) {
     array_container_t container{arr.data(), arr.size()};
     return simd_quad(&container, k);
+  });
+  bench_inline("simd_binary", [](const std::vector<uint16_t> &arr, uint16_t k) {
+    array_container_t container{arr.data(), arr.size()};
+    return simd_binary(&container, k);
   });
   bench_inline("binary_search", [](const std::vector<uint16_t> &arr, uint16_t k) {
     return std::binary_search(arr.begin(), arr.end(), k);
