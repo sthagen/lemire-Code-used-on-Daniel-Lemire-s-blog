@@ -9,7 +9,9 @@ extern "C" {
 }
 #include <arpa/inet.h>
 
-
+#if defined(__AVX512VL__) && __AVX512VL__ == 1
+#include "avx512_ton.h"
+#endif
 
 // This serialises in host order (little endian)
 // https://lemire.me/blog/2023/02/01/serializing-ips-quickly-in-c/
@@ -59,10 +61,25 @@ int main() {
     bytes += test_data.back().size();
   }
   uint64_t sum{};
+#if defined(__AVX512VL__) && __AVX512VL__ == 1
+  pretty_print(N, bytes, "avx512_inet_aton", bench([&test_data, &sum]() {
+                 for (const std::string &s : test_data) {
+                  uint32_t ipv4;
+                  auto err = parse_ipv4_avx512vl(s.data(), s.size(), &ipv4);
+                  if (!err) {
+                    printf("Error parsing %s\n", s.c_str());
+                  }
+                   sum += ipv4;
+                 }
+               }));
+#endif
   pretty_print(N, bytes, "sse_inet_aton", bench([&test_data, &sum]() {
                  for (const std::string &s : test_data) {
                   uint32_t ipv4;
-                   sse_inet_aton(s.data(), s.size(), &ipv4); // should check error
+                  auto err = sse_inet_aton(s.data(), s.size(), &ipv4); 
+                  if (!err) {
+                    printf("Error parsing %s\n", s.c_str());
+                  }
                    sum += ipv4;
                  }
                }));
@@ -70,7 +87,10 @@ int main() {
                  for (const std::string &s : test_data) {
                   uint32_t ipv4;
                   size_t length;
-                   sse_inet_aton_16(s.data(), &ipv4, &length); // should check error
+                   auto err = sse_inet_aton_16(s.data(), &ipv4, &length); 
+                   if (!err) {
+                     printf("Error parsing %s\n", s.c_str());
+                   }
                    sum += ipv4;
                  }
                }));
@@ -78,14 +98,20 @@ int main() {
                  for (const std::string &s : test_data) {
                   uint32_t ipv4;
                   size_t length;
-                   sse_inet_aton_16_branchless(s.data(), &ipv4, &length); // should check error
+                   auto err = sse_inet_aton_16_branchless(s.data(), &ipv4, &length); 
+                   if (!err) {
+                     printf("Error parsing %s\n", s.c_str());
+                   }
                    sum += ipv4;
                  }
                }));
   pretty_print(N, bytes, "inet_pton", bench([&test_data, &sum]() {
                  for (const std::string &s : test_data) {
                   uint32_t ipv4;
-                  inet_pton(AF_INET, s.c_str(), &ipv4); // should check error
+                  auto err = inet_pton(AF_INET, s.c_str(), &ipv4); 
+                  if (!err) {
+                    printf("Error parsing %s\n", s.c_str());
+                  }
                   sum += ipv4;
                  }
                }));
