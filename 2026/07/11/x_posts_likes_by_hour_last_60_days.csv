@@ -1,0 +1,25 @@
+hour_start_local,hour_end_local,hour_label,post_count,min_likes,median_likes,max_likes,timezone,window_start_utc,window_end_utc,notes
+00:00,00:59,00:00-00:59,5,0,1,17,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+01:00,01:59,01:00-01:59,8,0,0.5,125,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+02:00,02:59,02:00-02:59,5,0,1,24,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+03:00,03:59,03:00-03:59,3,0,0,0,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+04:00,04:59,04:00-04:59,11,0,1,95,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+05:00,05:59,05:00-05:59,7,0,1,48,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+06:00,06:59,06:00-06:59,8,0,0.5,2,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+07:00,07:59,07:00-07:59,10,0,1.0,48,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+08:00,08:59,08:00-08:59,45,0,2,385,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+09:00,09:59,09:00-09:59,58,0,3.0,470,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+10:00,10:59,10:00-10:59,30,0,1.0,69,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+11:00,11:59,11:00-11:59,42,0,2.0,135,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+12:00,12:59,12:00-12:59,21,0,1,20,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+13:00,13:59,13:00-13:59,22,0,2.0,98,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+14:00,14:59,14:00-14:59,17,0,1,51,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+15:00,15:59,15:00-15:59,29,0,1,74,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+16:00,16:59,16:00-16:59,15,0,2,68,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+17:00,17:59,17:00-17:59,30,0,1.0,79,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+18:00,18:59,18:00-18:59,14,0,1.0,5,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+19:00,19:59,19:00-19:59,7,0,0,42,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+20:00,20:59,20:00-20:59,18,0,1.0,9,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+21:00,21:59,21:00-21:59,11,1,2,245,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+22:00,22:59,22:00-22:59,11,0,1,170,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime
+23:00,23:59,23:00-23:59,8,0,28.0,272,America/Toronto,2026-05-12T00:00:00Z,2026-07-11,excludes pure retweets of others; likes=like_count lifetime

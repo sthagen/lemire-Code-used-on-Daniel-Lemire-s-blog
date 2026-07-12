@@ -1,0 +1,50 @@
+rank,id,created_at_utc,url,like_count,repost_count,reply_count,quote_count,bookmark_count,impression_count,char_count,article_title,article_url,text
+1,2057449025058525210,2026-05-21T13:10:47.000Z,https://x.com/lemire/status/2057449025058525210,470,36,270,36,149,228714,301,,,"I am getting tired of reading 'experts' like LeCun repeatedly claiming that our AIs are nowhere near human-level intelligence.
+Let us look at the evidence.
+US universities rank students based on standardized tests like the SAT. Current AIs achieve near-perfect SAT scores. They https://t.co/MDrefsAet2"
+2,2056009575929704595,2026-05-17T13:50:56.000Z,https://x.com/lemire/status/2056009575929704595,456,19,12,1,156,30722,219,,,"Wait ? What ? Is Go adding support for data parallellism (SIMD) in the standard library ?
+
+If Go starts adding SIMD support, I'll need to add a new chapter to my Go book.
+
+https://t.co/I5untcDdBJ https://t.co/yTMcXyXv1H"
+3,2055256893451354128,2026-05-15T12:00:02.000Z,https://x.com/lemire/status/2055256893451354128,385,46,2,0,253,32783,275,,,"Just gave a talk on SIMD-accelerated data processing in C++!
+We push JSON parsing to ~14 GB/s single-threaded on a macBook, added C++26 compile-time reflection for zero-boilerplate (de)serialization, and brought blazing fast UTF-8/16 + Base64 to browsers (16+ GB/s).
+Hardware"
+4,2055619273859694645,2026-05-16T12:00:01.000Z,https://x.com/lemire/status/2055619273859694645,301,29,29,0,162,43717,302,,,"In many applications, you need a map from strings to integers. In python, you might do it like so...
+
+d = {""apple"": 100, ""banana"": 200, ""cherry"": 300}
+
+If you have 1 million keys, that can use a lot of memory!!!  Like over 100 bytes per key!
+
+I have published a new library that https://t.co/FXEQvkBBoo"
+5,2063103547021935026,2026-06-06T03:39:50.000Z,https://x.com/lemire/status/2063103547021935026,272,27,25,5,192,98056,302,,,"Le monde qui a enfanté @ylecun n’est pas celui d’Albert Einstein. Einstein n’avait pas la revue par les pairs ni la National Science Foundation et ses mécanismes de financement bureaucratiques.
+
+Dans la première moitié du XXᵉ siècle et jusqu’à la fin des années 1960, la plupart https://t.co/rGVM4v3NYB"
+6,2062715526636253385,2026-06-05T01:57:59.000Z,https://x.com/lemire/status/2062715526636253385,245,38,36,10,88,31655,303,,,"What is happening to universities is troubling.
+
+Students just have AI do their programming assignments. They seem to no longer do any work. It is just pure AI.
+
+I am not joking. Students complete an entire course, and then end up not being unable to write a 3-line function.
+
+So https://t.co/US0X1emXZi"
+7,2056706563960647738,2026-05-19T12:00:31.000Z,https://x.com/lemire/status/2056706563960647738,195,24,4,0,149,15824,23,SIMD-accelerated integer-to-string conversion,https://x.com/i/article/2056459033561952256,https://t.co/dTALpbXH2u
+8,2062880075117113739,2026-06-05T12:51:51.000Z,https://x.com/lemire/status/2062880075117113739,194,21,37,15,59,23392,300,,,"Nvidia is proposing a beast of a CPU system for Windows PCs.
+It has 128 GB of shared memory and comes with up to 6,144 state-of-the-art CUDA cores. 
+
+CPU wise, the chip has 10 performance cores and 10 efficiency cores. The performance cores are based on the Cortex-X925. These https://t.co/dSGWII6rex"
+9,2058017478895173977,2026-05-23T02:49:37.000Z,https://x.com/lemire/status/2058017478895173977,170,18,7,1,120,20797,23,Parsing IPv6 Addresses Crazily Fast with AVX-512,https://x.com/i/article/2058016449361317888,https://t.co/4cneJVHmOH
+10,2067955827567145150,2026-06-19T13:01:04.000Z,https://x.com/lemire/status/2067955827567145150,140,9,8,0,93,8323,276,,,"Earlier this year, I promoted my book Mastering Programming. It is for readers are already programmers but want to improve their skills.
+The feedback has been great. Many people enjoy the book.
+Interestingly, there are still people reading programming books in 2026! Who knew?"
+11,2072348826858332231,2026-07-01T15:57:17.000Z,https://x.com/lemire/status/2072348826858332231,135,8,1,0,48,20203,291,,,"Bun includes a fast JSON parser leveraging data-parallel instructions (SIMD). Similarly, Node.js — the standard JavaScript runtime — features a fast JSON parser based on the same approach, thanks to @yagiznizipli who integrated the simdjson library.
+
+further reading: https://t.co/W1bRhqrFw6"
+12,2072919933747417596,2026-07-03T05:46:39.000Z,https://x.com/lemire/status/2072919933747417596,125,7,4,2,36,19196,302,,,"I maintain a few popular libraries used in critical systems. I get a constant flow of « vulnerability reports », many of them are not vulnerabilities and should not be acted upon.
+
+Matteo describes a scenario where he (an expert) got caught up and « fixed » a vulnerability that https://t.co/bQglTJKL7Z"
+13,2056365013443465624,2026-05-18T13:23:19.000Z,https://x.com/lemire/status/2056365013443465624,115,8,13,3,54,14584,302,,,"GCC16 supports contracts in C++. Among other things, you can specify in code your expectations regarding the parameters, as well as your expectations regarding the outputs.
+
+How this is check depends on the execution profile.
+
+You can specify it with  -fcontract-build-level=... https://t.co/GfjpDR7pyD"
+14,2066174269839519796,2026-06-14T15:01:48.000Z,https://x.com/lemire/status/2066174269839519796,111,9,6,1,84,14531,23,Parsing JSON at compile time with C++26 static reflection,https://x.com/i/article/2066173395083943936,https://t.co/vhAnbKjckw

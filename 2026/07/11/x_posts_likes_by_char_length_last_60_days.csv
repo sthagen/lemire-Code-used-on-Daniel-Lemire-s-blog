@@ -1,0 +1,5 @@
+chars_min,chars_max_exclusive,char_range_label,post_count,min_likes,median_likes,max_likes,window_start_utc,window_end_utc,notes
+0,100,0-100,251,0,1,195,2026-05-12T00:00:00Z,2026-07-11,"excludes pure retweets; char length of API text field (incl. t.co URLs); buckets [start,start+100)"
+100,200,100-200,89,0,1,73,2026-05-12T00:00:00Z,2026-07-11,"excludes pure retweets; char length of API text field (incl. t.co URLs); buckets [start,start+100)"
+200,300,200-300,46,0,3.5,456,2026-05-12T00:00:00Z,2026-07-11,"excludes pure retweets; char length of API text field (incl. t.co URLs); buckets [start,start+100)"
+300,400,300-400,49,1,46,470,2026-05-12T00:00:00Z,2026-07-11,"excludes pure retweets; char length of API text field (incl. t.co URLs); buckets [start,start+100)"
