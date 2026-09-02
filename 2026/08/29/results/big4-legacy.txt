@@ -1,0 +1,70 @@
+goos: linux
+goarch: amd64
+pkg: jsonbench
+cpu: INTEL(R) XEON(R) GOLD 6548N
+BenchmarkUnmarshalAny/legacy/twitter         	     200	   5951663 ns/op	 106.11 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     204	   5917631 ns/op	 106.72 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     204	   5819286 ns/op	 108.52 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     204	   5862558 ns/op	 107.72 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     204	   6161926 ns/op	 102.49 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     159	   6762666 ns/op	  93.38 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     213	   5663036 ns/op	 111.52 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/twitter         	     205	   5695069 ns/op	 110.89 MB/s	 2076680 B/op	   32125 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      38	  30233188 ns/op	  74.46 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      42	  29941401 ns/op	  75.18 MB/s	10583509 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      42	  32617114 ns/op	  69.01 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      38	  30718290 ns/op	  73.28 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      42	  30651574 ns/op	  73.44 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      40	  30671946 ns/op	  73.39 MB/s	10583507 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      40	  31037246 ns/op	  72.53 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/canada          	      40	  30731548 ns/op	  73.25 MB/s	10583508 B/op	  392515 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	      92	  17009816 ns/op	 101.54 MB/s	 5130746 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	     100	  14224314 ns/op	 121.43 MB/s	 5130745 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	      93	  14362705 ns/op	 120.26 MB/s	 5130746 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	     100	  14300922 ns/op	 120.78 MB/s	 5130746 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	     100	  14410680 ns/op	 119.86 MB/s	 5130746 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	      99	  15291358 ns/op	 112.95 MB/s	 5130745 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	     100	  14380318 ns/op	 120.11 MB/s	 5130745 B/op	   95865 allocs/op
+BenchmarkUnmarshalAny/legacy/citm_catalog    	     100	  14454904 ns/op	 119.49 MB/s	 5130745 B/op	   95865 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     319	   3670526 ns/op	 128.30 MB/s	 1488029 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     332	   3652112 ns/op	 128.95 MB/s	 1488029 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     234	   5351618 ns/op	  88.00 MB/s	 1488028 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     318	   3778776 ns/op	 124.63 MB/s	 1488029 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     315	   3806018 ns/op	 123.74 MB/s	 1488030 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     312	   3766649 ns/op	 125.03 MB/s	 1488030 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     304	   3815255 ns/op	 123.44 MB/s	 1488029 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/twitter           	     315	   3773472 ns/op	 124.80 MB/s	 1488030 B/op	   27956 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  14405127 ns/op	 145.10 MB/s	 2097784 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10222839 ns/op	 204.47 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10238349 ns/op	 204.16 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10240156 ns/op	 204.12 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10158575 ns/op	 205.76 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10139386 ns/op	 206.15 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10146661 ns/op	 206.00 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/canada            	     100	  10143535 ns/op	 206.07 MB/s	 2097782 B/op	      22 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     195	   5949341 ns/op	  84.09 MB/s	 2384620 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     202	   5857751 ns/op	  85.41 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     207	   5775749 ns/op	  86.62 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     207	   5762861 ns/op	  86.82 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     207	   5780522 ns/op	  86.55 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     207	   5794952 ns/op	  86.34 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     207	   5760419 ns/op	  86.85 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkMarshalAny/legacy/citm_catalog      	     192	   5996333 ns/op	  83.44 MB/s	 2384619 B/op	   62675 allocs/op
+BenchmarkUnmarshalRecords                    	      67	  19512293 ns/op	  61.47 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      66	  19538549 ns/op	  61.39 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      72	  19509428 ns/op	  61.48 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      67	  19473073 ns/op	  61.60 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      67	  19389343 ns/op	  61.86 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      73	  19495815 ns/op	  61.52 MB/s	 5179552 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      67	  19384081 ns/op	  61.88 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkUnmarshalRecords                    	      69	  19483829 ns/op	  61.56 MB/s	 5179553 B/op	   80027 allocs/op
+BenchmarkMarshalRecords                      	     434	   2715392 ns/op	 441.72 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     440	   2714887 ns/op	 441.81 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     444	   2708455 ns/op	 442.85 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     445	   2682580 ns/op	 447.13 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     440	   2771372 ns/op	 432.80 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     435	   2713460 ns/op	 442.04 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     427	   2708028 ns/op	 442.92 MB/s	 1204261 B/op	       2 allocs/op
+BenchmarkMarshalRecords                      	     428	   2706005 ns/op	 443.26 MB/s	 1204261 B/op	       2 allocs/op
+PASS
+ok  	jsonbench	79.953s

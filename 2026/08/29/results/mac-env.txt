@@ -1,0 +1,11 @@
+date:        2026-08-29T16:41:11Z
+host:        mac
+uname:       Darwin MBP-dlemire 24.6.0 Darwin Kernel Version 24.6.0: Tue Apr 21 20:19:12 PDT 2026; root:xnu-11417.140.69.710.16~1/RELEASE_ARM64_T6041 arm64
+go:          go version go1.27.0 darwin/arm64
+cpu:         Apple M4 Max
+ncpu:        14
+GOTOOCHAIN:  go1.27.0
+GOMAXPROCS:  1
+count:       8
+benchtime:   1s
+pin:         (none)
